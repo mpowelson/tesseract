@@ -101,9 +101,10 @@ public:
     // Update only the joints which were provided.
     for (int i = 0; i < traj.rows(); ++i)
     {
-      for (int j = 0; j < traj.cols(); ++j)
+      for (int j = 0; j < traj.cols() - 1; ++j)
       {
         msg.joint_trajectory.points[i].positions[jn_to_index[joint_names[j]]] = traj(i, j);
+      // TODO: change this to display the correct duration (last column not iterating over currently)
       }
     }
     trajectory_pub_.publish(msg);
