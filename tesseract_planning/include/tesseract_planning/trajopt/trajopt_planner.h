@@ -38,6 +38,23 @@ namespace tesseract
 {
 namespace tesseract_planning
 {
+/**
+ * @brief  Used to convert an error function to a constraint
+ * This is converted to a cost or constraint using TrajOptCostFromErrFunc or TrajOptConstraintFromErrFunc
+ */
+struct ConstraintErrCalculator : sco::VectorOfVector
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  std::function<Eigen::VectorXd(Eigen::VectorXd)> constraint_error_function_ ;
+  ConstraintErrCalculator(std::function<Eigen::VectorXd(Eigen::VectorXd)> err_function)
+    : constraint_error_function_(std::move(err_function))
+  {
+  }
+
+  Eigen::VectorXd operator()(const Eigen::VectorXd& dof_vals) const override {return constraint_error_function_(dof_vals);}
+};
+
 struct TrajOptPlannerConfig
 {
   TrajOptPlannerConfig(trajopt::TrajOptProbPtr prob) : prob(prob) {}

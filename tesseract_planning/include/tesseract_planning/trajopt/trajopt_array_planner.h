@@ -96,6 +96,13 @@ struct TrajOptArrayPlannerConfig
 
   /** @brief Callback functions called on each iteration of the optimization (Optional) */
   std::vector<sco::Optimizer::Callback> callbacks_;
+
+  /** @brief Error function that is set as a constraint for each timestep.
+   *
+   * arg: VectorXd will be all of the joint values for one timestep.
+   * return: VectorXd of violations for each joint. Anything > 0 will be a violation
+   */
+  std::function<Eigen::VectorXd(Eigen::VectorXd)> constraint_error_function_;
 };
 
 /**

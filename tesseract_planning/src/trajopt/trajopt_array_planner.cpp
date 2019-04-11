@@ -238,6 +238,17 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
 
   trajopt::TrajOptProbPtr prob = ConstructProblem(pci);
 
+  // Now we add the constraints from error functions since they don't have term infos: TODO: Clean Trajopt term wrapper
+  for (int iStep = 0; iStep < pci.basic_info.n_steps - 1; ++iStep)
+  {
+    prob->addConstraint(sco::ConstraintPtr(new TrajOptConstraintFromErrFunc(
+        sco::VectorOfVectorPtr(new tesseract::tesseract_planning::ConstraintErrCalculator(config.constraint_error_function_)),
+        prob->GetVarRow(iStep, 0, pci.kin->numJoints()),
+        Eigen::VectorXd::Ones(0),
+        sco::INEQ,
+        "ConstraintErrFunc")));
+  }
+
   // -------- Solve the problem ------------
   // ---------------------------------------
   // Set the parameters in trajopt_planner
