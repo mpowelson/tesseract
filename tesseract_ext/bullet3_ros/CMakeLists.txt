@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS)
 #set(USE_DOUBLE_PRECISION ON CACHE BOOL "Enable Bullet Double Precision")
 
 set(BUILD_UNIT_TESTS OFF CACHE BOOL "Disable Bullet Unit Tests" FORCE)
+set(BULLET2_MULTITHREADING ON CACHE BOOL "Allows you to use bullet in multithreaded application" FORCE)
 
 file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/include/bullet")
 catkin_package(
