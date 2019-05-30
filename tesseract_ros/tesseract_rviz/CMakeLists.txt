@@ -104,7 +104,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   tesseract
-  Eigen3::Eigen
+  ${EIGEN3_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}
@@ -112,7 +112,7 @@ target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
 )
 
 target_compile_options(${PROJECT_NAME}_render_tools PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_render_tools PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_render_tools PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_render_tools PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -136,13 +136,13 @@ qt_wrap_cpp(${PROJECT_NAME}_state_plugin_core_cpp_MOCS include/tesseract_rviz/te
 add_library(${PROJECT_NAME}_state_plugin_core SHARED src/tesseract_state_plugin/tesseract_state_display.cpp ${${PROJECT_NAME}_state_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_state_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
-    Eigen3::Eigen
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_state_plugin_core PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_state_plugin_core PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_state_plugin_core PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_state_plugin_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -155,7 +155,7 @@ target_include_directories(${PROJECT_NAME}_state_plugin_core SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_state_plugin SHARED src/tesseract_state_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_state_plugin PRIVATE ${PROJECT_NAME}_state_plugin_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_state_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_state_plugin PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_state_plugin PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_state_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -172,13 +172,13 @@ target_link_libraries(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     ${PROJECT_NAME}_state_plugin_core
     tesseract_environment_core
     tesseract_environment_kdl
-    Eigen3::Eigen
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_trajectory_plugin_core PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_trajectory_plugin_core PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_trajectory_plugin_core PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -192,11 +192,11 @@ add_library(${PROJECT_NAME}_trajectory_plugin SHARED src/tesseract_trajectory_pl
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin PRIVATE
     ${PROJECT_NAME}_trajectory_plugin_core
     tesseract_environment_core
-    Eigen3::Eigen
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_trajectory_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_trajectory_plugin PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_trajectory_plugin PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_trajectory_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -207,7 +207,7 @@ target_include_directories(${PROJECT_NAME}_trajectory_plugin SYSTEM PRIVATE
 add_executable(${PROJECT_NAME}_test src/test.cpp)
 target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME}_trajectory_plugin_core ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_test PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_test PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_test PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_test PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

@@ -6,7 +6,7 @@ set_and_check(@PROJECT_NAME@_LIBRARY_DIRS "${PACKAGE_PREFIX_DIR}/lib")
 set(@PROJECT_NAME@_LIBRARIES "@PACKAGE_LIBRARIES@")
 
 include(CMakeFindDependencyMacro)
-find_dependency(Boost COMPONENTS system)
+find_package(Boost COMPONENTS system)
 find_dependency(tesseract_scene_graph)
 find_dependency(tesseract_collision)
 find_dependency(tesseract_environment)

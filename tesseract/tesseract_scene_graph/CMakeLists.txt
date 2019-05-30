@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_scene_graph VERSION 0.1.0 LANGUAGES CXX)
+add_compile_options(-std=c++11)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
@@ -23,7 +24,6 @@ add_library(${PROJECT_NAME} SHARED src/graph.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${ASSIMP_LIBRARIES} ${TinyXML_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

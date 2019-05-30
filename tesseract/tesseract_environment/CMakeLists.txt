@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_environment VERSION 0.1.0 LANGUAGES CXX)
 
+add_compile_options(-std=c++11)
+
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
 find_package(orocos_kdl REQUIRED)
@@ -12,7 +14,7 @@ find_package(tesseract_scene_graph REQUIRED)
 add_library(${PROJECT_NAME}_core SHARED src/core/environment.cpp)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract_collision_core tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_core PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_core PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_core PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -22,7 +24,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_env.cpp src/kdl/kdl_state_solver.cpp)
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_collision_fcl tesseract_collision_bullet tesseract_scene_graph orocos-kdl console_bridge ${BULLET_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_kdl PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_kdl PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

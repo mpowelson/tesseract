@@ -1,4 +1,7 @@
 find_package(OpenMP REQUIRED)
+
+add_compile_options(-std=c++11)
+
 if(OPENMP_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -12,7 +15,7 @@ macro(add_gtest test_name test_file)
   add_executable(${test_name} ${test_file})
   target_link_libraries(${test_name} ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${test_name} PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-  target_compile_features(${test_name} PRIVATE cxx_std_11)
+#  target_compile_features(${test_name} PRIVATE cxx_std_11)
   target_compile_definitions(${test_name} PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}/test")
   target_include_directories(${test_name} PRIVATE ${GTEST_INCLUDE_DIRS})
   gtest_discover_tests(${test_name})

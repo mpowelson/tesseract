@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_visualization VERSION 0.1.0 LANGUAGES CXX)
 
+add_compile_options(-std=c++11)
+
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_collision REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE tesseract_collision_fcl tesseract_collision_bullet)
 target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
+#target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
