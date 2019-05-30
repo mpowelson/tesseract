@@ -21,7 +21,7 @@ catkin_package()
 add_executable(${PROJECT_NAME}_basic_cartesian_plan src/basic_cartesian_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_basic_cartesian_plan tesseract tesseract_planning_trajopt ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_basic_cartesian_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_basic_cartesian_plan PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_basic_cartesian_plan PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_basic_cartesian_plan PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -32,7 +32,7 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_plan SYSTEM PUBLIC
 add_executable(${PROJECT_NAME}_glass_up_right_plan src/glass_up_right_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_glass_up_right_plan tesseract tesseract_planning_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_glass_up_right_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_glass_up_right_plan PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_glass_up_right_plan PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_glass_up_right_plan PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -42,7 +42,7 @@ target_include_directories(${PROJECT_NAME}_glass_up_right_plan SYSTEM PUBLIC
 add_executable(${PROJECT_NAME}_puzzle_piece_plan src/puzzle_piece_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_puzzle_piece_plan tesseract tesseract_planning_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_puzzle_piece_plan PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_puzzle_piece_plan PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_puzzle_piece_plan PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -52,7 +52,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_plan SYSTEM PUBLIC
 add_executable(${PROJECT_NAME}_car_seat_demo src/car_seat_demo.cpp)
 target_link_libraries(${PROJECT_NAME}_car_seat_demo tesseract tesseract_planning_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_car_seat_demo PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_car_seat_demo PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_car_seat_demo PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_car_seat_demo PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -62,7 +62,7 @@ target_include_directories(${PROJECT_NAME}_car_seat_demo SYSTEM PUBLIC
 add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan src/puzzle_piece_auxillary_axes_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan tesseract tesseract_planning_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -72,7 +72,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan SYST
 add_executable(${PROJECT_NAME}_pick_and_place_plan src/pick_and_place_plan.cpp)
 target_link_libraries(${PROJECT_NAME}_pick_and_place_plan tesseract tesseract_planning_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_pick_and_place_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_pick_and_place_plan PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_pick_and_place_plan PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_pick_and_place_plan PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

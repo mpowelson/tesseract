@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_monitoring)
 
+add_compile_options(-std=c++11)
+
 find_package(tesseract REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
@@ -44,14 +46,14 @@ include_directories(
 add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor.cpp)
 target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_contacts_node PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_contacts_node PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_contacts_node PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_contacts_node PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(${PROJECT_NAME}_contacts_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_environment SHARED src/environment_monitor.cpp src/current_state_monitor.cpp)
 target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_environment PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_environment PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_environment PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(${PROJECT_NAME}_environment SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 add_dependencies(${PROJECT_NAME}_environment ${PROJECT_NAME}_gencfg)
@@ -59,14 +61,14 @@ add_dependencies(${PROJECT_NAME}_environment ${PROJECT_NAME}_gencfg)
 add_executable(demo_scene demos/demo_scene.cpp)
 target_link_libraries(demo_scene PRIVATE ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
 target_compile_options(demo_scene PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(demo_scene PRIVATE cxx_std_11)
+#target_compile_features(demo_scene PRIVATE cxx_std_11)
 target_include_directories(demo_scene PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(demo_scene SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_environment_node src/environment_monitor_node.cpp)
 target_link_libraries(${PROJECT_NAME}_environment_node PRIVATE ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment_node PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_environment_node PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME}_environment_node PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_environment_node PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(${PROJECT_NAME}_environment_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_plugins)
 
+add_compile_options(-std=c++11)
+
 find_package(catkin REQUIRED COMPONENTS
   tesseract_msgs
   roscpp
@@ -27,9 +29,9 @@ catkin_package(
 )
 
 add_library(tesseract_collision_bullet_plugin src/plugins/bullet_plugin.cpp)
-target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract_collision_core tesseract_collision_bullet Eigen3::Eigen ${catkin_LIBRARIES})
+target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract_collision_core tesseract_collision_bullet ${EIGEN3_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_bullet_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(tesseract_collision_bullet_plugin PRIVATE cxx_std_11)
+#target_compile_features(tesseract_collision_bullet_plugin PRIVATE cxx_std_11)
 target_include_directories(tesseract_collision_bullet_plugin SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
@@ -37,7 +39,7 @@ target_include_directories(tesseract_collision_bullet_plugin SYSTEM PRIVATE
 add_library(tesseract_collision_fcl_plugin src/plugins/fcl_plugin.cpp)
 target_link_libraries(tesseract_collision_fcl_plugin PRIVATE tesseract_collision_core tesseract_collision_fcl ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_fcl_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(tesseract_collision_bullet_plugin PRIVATE cxx_std_11)
+#target_compile_features(tesseract_collision_bullet_plugin PRIVATE cxx_std_11)
 target_include_directories(tesseract_collision_bullet_plugin SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 

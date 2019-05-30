@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract VERSION 0.1.0 LANGUAGES CXX)
+add_compile_options(-std=c++11)
 
 find_package(Boost COMPONENTS system REQUIRED)
 find_package(console_bridge REQUIRED)
@@ -13,7 +14,7 @@ find_package(tesseract_kinematics REQUIRED)
 add_library(${PROJECT_NAME} SHARED src/tesseract.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract_scene_graph tesseract_collision_bullet tesseract_environment_kdl tesseract_kinematics_kdl console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
+#target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
