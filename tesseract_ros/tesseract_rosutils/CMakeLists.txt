@@ -4,6 +4,7 @@ project(tesseract_rosutils)
 find_package(catkin REQUIRED COMPONENTS
   tesseract_msgs
   roscpp
+  roslib
   eigen_conversions
 )
 
@@ -21,6 +22,7 @@ catkin_package(
   CATKIN_DEPENDS
     tesseract_msgs
     roscpp
+    roslib
     eigen_conversions
   DEPENDS
     EIGEN3
