@@ -67,10 +67,10 @@ bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
     {
       CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, no solution found");
     }
-    else if (status == KDL::ChainIkSolverPos_NR::E_MAX_ITERATIONS_EXCEEDED)
-    {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, max iteration exceeded");
-    }
+//    else if (status == KDL::ChainIkSolverPos_NR::E_MAX_ITERATIONS_EXCEEDED)
+//    {
+//      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, max iteration exceeded");
+//    }
     return false;
   }
 
