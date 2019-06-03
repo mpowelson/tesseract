@@ -61,20 +61,21 @@ bool KDLFwdKinChain::calcFwdKinHelper(VectorIsometry3d& poses,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                       int segment_num) const
 {
-  KDL::JntArray kdl_joints;
-  EigenToKDL(joint_angles, kdl_joints);
+  // Uncomment if on melodic or KDL >1.4
+//  KDL::JntArray kdl_joints;
+//  EigenToKDL(joint_angles, kdl_joints);
 
-  // run FK solver
-  std::vector<KDL::Frame> kdl_pose;
-  if (fk_solver_->JntToCart(kdl_joints, kdl_pose, segment_num) < 0)
-  {
-    CONSOLE_BRIDGE_logError("Failed to calculate FK");
-    return false;
-  }
+//  // run FK solver
+//  std::vector<KDL::Frame> kdl_pose;
+//  if (fk_solver_->JntToCart(kdl_joints, kdl_pose, segment_num) < 0)
+//  {
+//    CONSOLE_BRIDGE_logError("Failed to calculate FK");
+//    return false;
+//  }
 
-  KDLToEigen(kdl_pose, poses);
+//  KDLToEigen(kdl_pose, poses);
 
-  return true;
+  return false;
 }
 
 bool KDLFwdKinChain::calcFwdKin(VectorIsometry3d& poses,
