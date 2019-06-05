@@ -13,6 +13,7 @@
   <depend>roscpp</depend>
   <depend>tesseract_collision</depend>
   <depend>roslib</depend>
+  <depend>tesseract_collision</depend>
   <depend>tesseract_msgs</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_geometry</depend>
