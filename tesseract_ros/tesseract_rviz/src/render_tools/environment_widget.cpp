@@ -23,9 +23,10 @@ namespace tesseract_rviz
 const std::string DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
 const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
-EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* display)
+EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* display, const std::string& widget_ns)
   : widget_(widget)
   , display_(display)
+  , widget_ns_(widget_ns)
   , update_required_(false)
   , tesseract_(nullptr)
   , visualization_(nullptr)
@@ -98,10 +99,10 @@ void EnvironmentWidget::onInitialize(VisualizationWidget::Ptr visualization,
   nh_ = update_nh;
 
   modify_environment_server_ =
-      nh_.advertiseService(DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentWidget::modifyEnvironmentCallback, this);
+      nh_.advertiseService(widget_ns_ + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentWidget::modifyEnvironmentCallback, this);
 
   get_environment_changes_server_ =
-      nh_.advertiseService(DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentWidget::getEnvironmentChangesCallback, this);
+      nh_.advertiseService(widget_ns_ + DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentWidget::getEnvironmentChangesCallback, this);
 
   changedEnableVisualVisible();
   changedEnableCollisionVisible();

@@ -41,7 +41,7 @@ public:
   using Ptr = std::shared_ptr<EnvironmentWidget>;
   using ConstPtr = std::shared_ptr<const EnvironmentWidget>;
 
-  EnvironmentWidget(rviz::Property* widget, rviz::Display* display);
+  EnvironmentWidget(rviz::Property* widget, rviz::Display* display, const std::string& widget_ns = std::string());
 
   virtual ~EnvironmentWidget();
 
@@ -68,6 +68,7 @@ private Q_SLOTS:
 protected:
   rviz::Property* widget_;
   rviz::Display* display_;
+  std::string widget_ns_;
   VisualizationWidget::Ptr visualization_;
   tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle nh_;

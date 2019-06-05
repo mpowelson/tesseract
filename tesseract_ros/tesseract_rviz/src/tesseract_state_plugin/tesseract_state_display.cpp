@@ -53,9 +53,12 @@ namespace tesseract_rviz
 
 TesseractStateDisplay::TesseractStateDisplay() : Display()
 {
+  state_display_counter_++;
+  state_display_id_ = state_display_counter_;
   tesseract_ = std::make_shared<tesseract::Tesseract>();
-  environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
+  environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this, "state_display_" + std::to_string(state_display_id_) + "/");
   state_monitor_ = std::make_shared<JointStateMonitorWidget>(this, this);
+
 }
 
 TesseractStateDisplay::~TesseractStateDisplay(){}
@@ -104,6 +107,7 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
   state_monitor_->onUpdate();
 }
 
+int TesseractStateDisplay::state_display_counter_ = -1;
 // ******************************************************************************************
 // Calculate Offset Position
 // ******************************************************************************************
