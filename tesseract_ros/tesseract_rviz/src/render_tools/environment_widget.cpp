@@ -26,18 +26,36 @@ const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* display, const std::string& widget_ns)
   : widget_(widget)
   , display_(display)
-  , widget_ns_(widget_ns)
-  , update_required_(false)
-  , tesseract_(nullptr)
   , visualization_(nullptr)
+  , tesseract_(nullptr)
+  , update_required_(false)
   , load_tesseract_(false)
 {
+  environment_widget_counter_++;
+  if (widget_ns == std::string())
+  {
+    environment_widget_id_ = environment_widget_counter_;
+    widget_ns_ = "env_widget_" + std::to_string(environment_widget_id_) + "/";
+  }
+  else
+  {
+    widget_ns_ = widget_ns;
+  }
+
   urdf_description_property_ =
       new rviz::StringProperty("URDF Description",
                                "robot_description",
                                "The name of the ROS parameter where the URDF for the robot is loaded",
                                widget_,
                                SLOT(changedURDFDescription()),
+                               this);
+
+  environment_namespace_property_ =
+      new rviz::StringProperty("Interface Namespace",
+                               QString::fromUtf8(widget_ns_.c_str()),
+                               "The namespace used for the service interface associated with the environment",
+                               widget_,
+                               SLOT(changedEnvironmentNamespace()),
                                this);
 
   tesseract_state_topic_property_ =
@@ -212,6 +230,21 @@ void EnvironmentWidget::changedURDFDescription()
 {
   if (display_->isEnabled())
     onReset();
+}
+
+void EnvironmentWidget::changedEnvironmentNamespace()
+{
+  // Need to kill services and relaunch with new name
+  modify_environment_server_.shutdown();
+  get_environment_changes_server_.shutdown();
+
+  widget_ns_ = environment_namespace_property_->getStdString();
+  modify_environment_server_ =
+      nh_.advertiseService(widget_ns_ + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentWidget::modifyEnvironmentCallback, this);
+
+  get_environment_changes_server_ =
+      nh_.advertiseService(widget_ns_ + DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentWidget::getEnvironmentChangesCallback, this);
+
 }
 
 void EnvironmentWidget::changedRootLinkName() {}
@@ -551,5 +584,7 @@ void EnvironmentWidget::loadEnvironment()
 
   highlights_.clear();
 }
+
+int EnvironmentWidget::environment_widget_counter_ = -1;
 
 }  // namespace tesseract_rviz

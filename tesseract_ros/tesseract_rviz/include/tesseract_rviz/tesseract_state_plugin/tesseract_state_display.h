@@ -73,8 +73,6 @@ public:
   void setLinkColor(const std::string& link_name, const QColor& color);
   void unsetLinkColor(const std::string& link_name);
 
-  int state_display_id_;
-
 protected:
   // overrides from Display
   void onInitialize() override;
@@ -88,8 +86,6 @@ protected:
   VisualizationWidget::Ptr visualization_;
   JointStateMonitorWidget::Ptr state_monitor_;
   EnvironmentWidget::Ptr environment_monitor_;
-
-  static int state_display_counter_;
 };
 
 
