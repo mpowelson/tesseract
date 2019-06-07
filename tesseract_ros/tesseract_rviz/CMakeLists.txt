@@ -205,6 +205,7 @@ target_link_libraries(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
     tesseract
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -229,6 +230,7 @@ add_library(${PROJECT_NAME}_trajectory_plugin SHARED src/tesseract_trajectory_pl
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin PRIVATE
     ${PROJECT_NAME}_trajectory_plugin_core
     tesseract
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_trajectory_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
@@ -252,6 +254,7 @@ add_library(${PROJECT_NAME}_manipulation_plugin_core SHARED src/tesseract_manipu
 target_link_libraries(${PROJECT_NAME}_manipulation_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
     tesseract
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -276,6 +279,7 @@ add_library(${PROJECT_NAME}_manipulation_plugin SHARED src/tesseract_manipulatio
 target_link_libraries(${PROJECT_NAME}_manipulation_plugin PRIVATE
     ${PROJECT_NAME}_manipulation_plugin_core
     tesseract
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_manipulation_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
