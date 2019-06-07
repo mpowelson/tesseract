@@ -152,6 +152,8 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "tesseract_contact_monitoring");
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
+//  ROS_ERROR("Press enter to continue");
+//  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
 
   SceneGraphPtr scene_graph;
@@ -192,8 +194,9 @@ int main(int argc, char** argv)
   nh.getParam(robot_description, urdf_xml_string);
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
+  tess = std::make_shared<tesseract::Tesseract>();
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  if (tess->init(urdf_xml_string, srdf_xml_string, locator))
+  if (!tess->init(urdf_xml_string, srdf_xml_string, locator))
   {
     ROS_ERROR("Failed to initialize environment.");
     return -1;
