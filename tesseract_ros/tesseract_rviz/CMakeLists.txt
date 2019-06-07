@@ -124,6 +124,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   tesseract
+  ${EIGEN3_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}
@@ -160,6 +161,7 @@ qt_wrap_cpp(${PROJECT_NAME}_state_plugin_core_cpp_MOCS include/tesseract_rviz/te
 add_library(${PROJECT_NAME}_state_plugin_core SHARED src/tesseract_state_plugin/tesseract_state_display.cpp ${${PROJECT_NAME}_state_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_state_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
+    ${EIGEN3_LIBRARIES}
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}

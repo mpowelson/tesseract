@@ -29,7 +29,7 @@ catkin_package(
 )
 
 add_library(tesseract_collision_bullet_plugin src/plugins/bullet_plugin.cpp)
-target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract_collision_core tesseract_collision_bullet ${catkin_LIBRARIES})
+target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract_collision_core tesseract_collision_bullet ${EIGEN3_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_bullet_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(tesseract_collision_bullet_plugin PRIVATE -std=c++11)
