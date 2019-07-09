@@ -78,7 +78,6 @@ namespace tesseract_environment
    * @param manager A continuous contact manager
    * @param env The environment
    * @param joint_names JointNames corresponding to the values in traj (must be in same order)
-   * @param link_names Name of the links to calculate collision data for.
    * @param traj The joint values at each time step
    * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
    * @param first_only Indicates if it should return on first contact
@@ -107,9 +106,10 @@ namespace tesseract_environment
       manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
 
       if (collisions.size() > 0)
+      {
         found = true;
-
-      contacts.push_back(collisions);
+        contacts.push_back(collisions);
+      }
 
       if (found && first_only)
         break;
@@ -123,7 +123,6 @@ namespace tesseract_environment
    * @param manager A continuous contact manager
    * @param env The environment
    * @param joint_names JointNames corresponding to the values in traj (must be in same order)
-   * @param link_names Name of the links to calculate collision data for.
    * @param traj The joint values at each time step
    * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
    * @param first_only Indicates if it should return on first contact
@@ -138,8 +137,8 @@ namespace tesseract_environment
   {
     bool found = false;
 
-    contacts.reserve(static_cast<size_t>(traj.rows() - 1));
-    for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
+    contacts.reserve(static_cast<size_t>(traj.rows()));
+    for (int iStep = 0; iStep < traj.rows(); ++iStep)
     {
       tesseract_collision::ContactResultMap collisions;
 
@@ -151,10 +150,10 @@ namespace tesseract_environment
       manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
 
       if (collisions.size() > 0)
+      {
         found = true;
-
-      contacts.push_back(collisions);
-
+        contacts.push_back(collisions);
+      }
       if (found && first_only)
         break;
     }

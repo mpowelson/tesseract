@@ -130,7 +130,7 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
     response.status_description = status_code_map_[0] + ": " + sco::statusToString(opt.results().status);
   }
 
-  return (response.status_code > 0);
+  return (response.status_code >= 0);
 }
 
 bool TrajOptPlanner::terminate() { return false; }
