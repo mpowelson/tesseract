@@ -164,7 +164,7 @@ inline tesseract_msgs::ProcessPlanSegment toProcessPlanSegement(const tesseract_
  * @param process_plan_segment Process plan segment
  * @return
  */
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const tesseract_msgs::ProcessPlanSegment& process_plan_segment)
+static bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const tesseract_msgs::ProcessPlanSegment& process_plan_segment)
 {
   double t = 0;
   if (!joint_trajectory.points.empty())
@@ -200,7 +200,7 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const
  * @param process_plan Process Plan
  * @return True if successful, otherwise false
  */
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const tesseract_msgs::ProcessPlan& process_plan)
+static bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const tesseract_msgs::ProcessPlan& process_plan)
 {
   double t = 0;
   if (!joint_trajectory.points.empty())
@@ -252,7 +252,7 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const
  * @param file_path The location to save the file
  * @return true if successful
  */
-bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const std::string& file_path)
+static bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const std::string& file_path)
 {
   std::ofstream myfile;
   myfile.open(file_path);
