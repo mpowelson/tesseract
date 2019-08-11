@@ -42,6 +42,12 @@ namespace tesseract_motion_planners
 {
 class DescartesMotionPlannerStatusCategory;
 
+struct DescartesPlannerResponse : public PlannerResponse
+{
+  std::vector<std::size_t> failed_vertices;
+  std::vector<std::size_t> failed_edges;
+};
+
 template <typename FloatType>
 struct DescartesMotionPlannerConfig
 {
@@ -107,6 +113,8 @@ public:
    * @return true if optimization complete
    */
   tesseract_common::StatusCode solve(PlannerResponse& response) override;
+
+  tesseract_common::StatusCode solve(DescartesPlannerResponse& response);
 
   bool terminate() override;
 

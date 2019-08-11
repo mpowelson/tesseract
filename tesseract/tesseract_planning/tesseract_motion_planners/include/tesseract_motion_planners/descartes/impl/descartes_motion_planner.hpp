@@ -226,6 +226,78 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 }
 
 template<typename FloatType>
+tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(DescartesPlannerResponse& response)
+{
+  tesseract_common::StatusCode config_status = isConfigured();
+  if (!config_status)
+  {
+    response.status = config_status;
+    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
+    return config_status;
+  }
+
+  ros::Time tStart = ros::Time::now();
+
+  const auto dof = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->numJoints();
+  descartes_light::Solver<FloatType> graph_builder(dof);
+  if (!graph_builder.build(config_->samplers, config_->timing_constraint, config_->edge_evaluator))
+  {
+    CONSOLE_BRIDGE_logError("Failed to build vertices");
+    for (const auto& i : graph_builder.getFailedVertices())
+    {
+      const Waypoint::Ptr& wp = config_->waypoints[i];
+      if (wp->getType() == WaypointType::CARTESIAN_WAYPOINT)
+      {
+        CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
+        config_->kinematics->analyzeIK(cwp->getTransform().cast<FloatType>());
+      }
+    }
+    response.failed_vertices = graph_builder.getFailedVertices();
+
+    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToBuildGraph, status_category_);
+    return response.status;
+  }
+
+  // Search for edges
+  std::vector<FloatType> solution;
+  if (!graph_builder.search(solution))
+  {
+    CONSOLE_BRIDGE_logError("Search for graph completion failed");
+    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
+    return response.status;
+  }
+
+  response.joint_trajectory.joint_names = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getJointNames();
+  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), dof);
+  for (size_t r = 0; r < config_->waypoints.size(); ++r)
+    for (size_t c = 0; c < dof; ++c)
+      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
+
+  // Check and report collisions
+  std::vector<tesseract_collision::ContactResultMap> collisions;
+  tesseract_collision::ContinuousContactManager::Ptr manager = config_->tesseract->getEnvironmentConst()->getContinuousContactManager();
+  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(config_->tesseract->getEnvironmentConst()->getSceneGraph(),
+                                                                                        config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getLinkNames(),
+                                                                                        config_->tesseract->getEnvironmentConst()->getCurrentState()->transforms);
+  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
+  manager->setContactDistanceThreshold(0);
+  collisions.clear();
+  bool found = tesseract_environment::checkTrajectory(*manager, *config_->tesseract->getEnvironmentConst(), response.joint_trajectory.joint_names, response.joint_trajectory.trajectory, collisions);
+
+  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f", (ros::Time::now() - tStart).toSec());
+
+  if (found)
+  {
+    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision, status_category_);
+    return response.status;
+  }
+
+  CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
+  response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::SolutionFound, status_category_);
+  return response.status;
+}
+
+template<typename FloatType>
 bool DescartesMotionPlanner<FloatType>::terminate()
 {
   CONSOLE_BRIDGE_logWarn("Termination of ongoing optimization is not implemented yet");
