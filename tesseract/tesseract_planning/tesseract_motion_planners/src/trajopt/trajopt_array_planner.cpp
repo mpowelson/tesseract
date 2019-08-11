@@ -114,6 +114,14 @@ tesseract_common::StatusCode TrajOptArrayPlanner::solve(PlannerResponse& respons
 
 bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& config)
 {
+  // Remove nullptr from target_waypoints
+  std::vector<Waypoint::Ptr> valid_waypoints;
+  for (auto& wp : config.target_waypoints_)
+  {
+    if (wp->isValid)
+      valid_waypoints.push_back(wp);
+  }
+
   // Check that parameters are valid
   if (config.tesseract_ == nullptr)
   {
@@ -133,7 +141,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
   }
 
   // Populate Basic Info
-  pci.basic_info.n_steps = static_cast<int>(config.target_waypoints_.size());
+  pci.basic_info.n_steps = static_cast<int>(valid_waypoints.size());
   pci.basic_info.manip = config.manipulator_;
   pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
@@ -144,14 +152,14 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
     pci.init_info.data = config.seed_trajectory_;
 
   // Add constraints
-  for (std::size_t ind = 0; ind < config.target_waypoints_.size(); ind++)
+  for (std::size_t ind = 0; ind < valid_waypoints.size(); ind++)
   {
-    auto waypoint_type = config.target_waypoints_[ind]->getType();
+    auto waypoint_type = valid_waypoints[ind]->getType();
     switch (waypoint_type)
     {
       case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
       {
-        JointWaypoint::Ptr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
+        JointWaypoint::Ptr joint_waypoint = std::static_pointer_cast<JointWaypoint>(valid_waypoints[ind]);
         std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
         const Eigen::VectorXd& coeffs = joint_waypoint->getCoefficients();
         assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), joint_waypoint->getNames().begin()));
@@ -174,7 +182,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
         // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
         // to keep the problem numerically stable.
         JointTolerancedWaypoint::Ptr joint_waypoint =
-            std::static_pointer_cast<JointTolerancedWaypoint>(config.target_waypoints_[ind]);
+            std::static_pointer_cast<JointTolerancedWaypoint>(valid_waypoints[ind]);
         std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
         const Eigen::VectorXd& coeffs = joint_waypoint->getCoefficients();
         assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), joint_waypoint->getNames().begin()));
@@ -217,7 +225,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
       case tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT:
       {
         CartesianWaypoint::Ptr cart_waypoint =
-            std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
+            std::static_pointer_cast<CartesianWaypoint>(valid_waypoints[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::make_shared<CartPoseTermInfo>();
         pose->term_type = cart_waypoint->isCritical() ? TT_CNT : TT_COST;
         pose->name = "cartesian_position";

@@ -103,6 +103,9 @@ public:
    */
   virtual const Eigen::VectorXd& getCoefficients() const { return coeffs_; }
 
+  /** @brief Set to true if the waypoint is a valid and should be processed */
+  bool isValid = true;
+
 protected:
   /** @brief Should be set by the derived class for casting Waypoint back to appropriate derived class type */
   WaypointType waypoint_type_;
