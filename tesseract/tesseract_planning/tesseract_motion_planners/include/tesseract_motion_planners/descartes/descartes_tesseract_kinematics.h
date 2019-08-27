@@ -11,32 +11,48 @@
 namespace tesseract_motion_planners
 {
 /** @brief Provides a Descartes interface for Tesseract Kinematics
-
-TODO:
-Unit test
-
-More constructors?
 */
 template <typename FloatType>
 class DescartesTesseractKinematics : public descartes_light::KinematicsInterface<FloatType>
 {
 public:
-
   using Ptr = std::shared_ptr<DescartesTesseractKinematics>;
   using ConstPtr = std::shared_ptr<const DescartesTesseractKinematics>;
 
-//  DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
-//                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik)
-//    : DescartesTesseractKinematics(tesseract_fk, tesseract_ik, descartes_light::IsValid, descartes_light::isWithinLimits ), tesseract_fk_(tesseract_fk), tesseract_ik_(tesseract_ik)
-//  {
-//    ik_seed_ = Eigen::VectorXd::Zero(dof());
-//  }
-
+  /**
+   * @brief This constructor defaults to using isWithinLimits as the isValidFn and gets redundant solutions within joint
+   * limits
+   * @param tesseract_fk Forward kinematics object
+   * @param tesseract_ik Inverse kinematics object
+   */
   DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
-                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik/*,
+                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik)
+    : DescartesTesseractKinematics(
+          tesseract_fk,
+          tesseract_ik,
+          std::bind(&descartes_light::isWithinLimits<FloatType>, std::placeholders::_1, tesseract_fk->getLimits()),
+          std::bind(&descartes_light::getRedundantSolutions<FloatType>,
+                    std::placeholders::_1,
+                    tesseract_fk->getLimits()))
+  {
+    ik_seed_ = Eigen::VectorXd::Zero(dof());
+  }
+
+  /**
+   * @brief DescartesTesseractKinematics
+   * @param tesseract_fk Forward kinematics object
+   * @param tesseract_ik Inverse kinematic object
+   * @param is_valid_fn Function that is used to determine if a vertex is valid
+   * @param redundant_sol_fn Function called to get redundant solutions beyond what tesseract_ik returns
+   */
+  DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
+                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
                                const descartes_light::IsValidFn<FloatType>& is_valid_fn,
-                               const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn*/)
-    : tesseract_fk_(tesseract_fk), tesseract_ik_(tesseract_ik)
+                               const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn)
+    : tesseract_fk_(tesseract_fk)
+    , tesseract_ik_(tesseract_ik)
+    , is_valid_fn_(is_valid_fn)
+    , redundant_sol_fn_(redundant_sol_fn)
   {
     ik_seed_ = Eigen::VectorXd::Zero(dof());
   }
@@ -67,6 +83,11 @@ private:
   descartes_light::IsValidFn<FloatType> is_valid_fn_;
   descartes_light::GetRedundantSolutionsFn<FloatType> redundant_sol_fn_;
   Eigen::VectorXd ik_seed_;
+
+  bool ik(const Eigen::Transform<FloatType, 3, Eigen::Isometry>& p,
+          const descartes_light::IsValidFn<FloatType>& is_valid_fn,
+          const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn,
+          std::vector<FloatType>& solution_set) const;
 };
 
 using DescartesTesseractKinematicsD = DescartesTesseractKinematics<double>;

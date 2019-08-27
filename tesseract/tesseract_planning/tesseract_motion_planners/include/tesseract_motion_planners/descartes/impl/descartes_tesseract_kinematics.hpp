@@ -8,30 +8,40 @@ template <typename FloatType>
 bool DescartesTesseractKinematics<FloatType>::ik(const Eigen::Transform<FloatType, 3, Eigen::Isometry>& p,
                                                  std::vector<FloatType>& solution_set) const
 {
-  // Convert to appropriate Eigen types
-  Eigen::Isometry3d p_double;
-  p_double = p.template cast<double>();
-  Eigen::VectorXd solution_eigen;
+  return ik(p, is_valid_fn_, redundant_sol_fn_, solution_set);
+}
 
-  // Solve IK
-  bool success = tesseract_ik_->calcInvKin(solution_eigen, p_double, ik_seed_);
+template <typename FloatType>
+bool DescartesTesseractKinematics<FloatType>::ik(const Eigen::Transform<FloatType, 3, Eigen::Isometry>& p,
+                                                 const descartes_light::IsValidFn<FloatType>& is_valid_fn,
+                                                 const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn,
+                                                 std::vector<FloatType>& solution_set) const
+{
+//  // Convert to appropriate Eigen types
+//  Eigen::Isometry3d p_double;
+//  p_double = p.template cast<double>();
+//  Eigen::VectorXd solution_eigen;
 
-  // Convert back to vector
-  std::vector<FloatType> solution_vec(solution_eigen.data(),
-                                      solution_eigen.data() + solution_eigen.rows() * solution_eigen.cols());
-  solution_set = solution_vec;
+//  // Solve IK
+//  bool success = tesseract_ik_->calcInvKin(solution_eigen, p_double, ik_seed_);
 
-  // Convert to array for redundant solutions
-  FloatType* sol[tesseract_ik_->numJoints()];
-  std::copy(solution_set.begin(), solution_set.end(), sol);
-  std::vector<FloatType> redundant_sol = redundant_sol_fn_(sol);
+//  // Convert back to vector
+//  std::vector<FloatType> solution_vec(solution_eigen.data(),
+//                                      solution_eigen.data() + solution_eigen.rows() * solution_eigen.cols());
+//  solution_set = solution_vec;
 
-  // Convert back to std::vector
-  if (is_valid_fn_(redundant_sol))
-    solution_set = redundant_sol;
-  solution_set.insert(end(solution_set), redundant_sol, redundant_sol + tesseract_ik_->numJoints());  // If good then
-                                                                                                      // add to solution
-  return success;
+//  // Get redundant solutions
+//  FloatType* sol[tesseract_ik_->numJoints()];
+//  std::copy(solution_set.begin(), solution_set.end(), sol);
+//  std::vector<FloatType> redundant_sol = redundant_sol_fn(*sol);
+
+//  // Add redundant solutions if they are valid
+//  if (is_valid_fn(redundant_sol.data()))
+//    solution_set = redundant_sol;
+//  solution_set.insert(std::end(solution_set), std::begin(redundant_sol), std::end(redundant_sol));
+
+//  return success;
+  return true;
 }
 
 template <typename FloatType>
@@ -45,7 +55,7 @@ bool DescartesTesseractKinematics<FloatType>::fk(const FloatType* pose,
 
   // Get the solution from the Tesseract Kinematics
   Eigen::Isometry3d solution_double;
-  bool success = tesseract_fk_->calcFwdKin(solution_double, joints);
+  bool success /*= tesseract_fk_->calcFwdKin(solution_double, joints)*/;
 
   // Cast from double to FloatType
   solution = solution_double.cast<FloatType>();
@@ -55,7 +65,8 @@ bool DescartesTesseractKinematics<FloatType>::fk(const FloatType* pose,
 template <typename FloatType>
 int DescartesTesseractKinematics<FloatType>::dof() const
 {
-  return tesseract_fk_->numJoints();
+  assert(tesseract_fk_->numJoints() < std::numeric_limits<int>::max());
+  return static_cast<int>(tesseract_fk_->numJoints());
 }
 
 template <typename FloatType>

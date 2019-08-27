@@ -40,6 +40,18 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
+template <typename FloatType>
+inline bool isNotValid(const FloatType* vertex)
+{
+  return false;
+}
+
+template <typename FloatType>
+inline bool isCompletelyValid(const FloatType* vertex)
+{
+  return true;
+}
+
 class DescartesTesseractKinematicsUnit : public ::testing::Test
 {
 protected:
@@ -64,8 +76,8 @@ protected:
     kdl_fk_ = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
     kdl_ik_ = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
 
-//    descartes_tesseract_kinematics_d_ = std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<template double>>(kdl_fk, kdl_ik);
-//    descartes_tesseract_kinematics_f_ = std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<template float>>(kdl_fk, kdl_ik);
+    descartes_tesseract_kinematics_d_ = std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<double>>(kdl_fk_, kdl_ik_);
+//    descartes_tesseract_kinematics_f_ = std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<float>>(kdl_fk_, kdl_ik_);
 
 //    DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
 //                                 const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
@@ -96,17 +108,17 @@ TEST_F(DescartesTesseractKinematicsUnit, FKTest)
 
 TEST_F(DescartesTesseractKinematicsUnit, DOFTest)
 {
-  // Sanity Check
+  // Sanity Check that urdf has 7 joints
   EXPECT_EQ(kdl_fk_->numJoints(), 7);
   // Actual Check
   EXPECT_EQ(descartes_tesseract_kinematics_d_->dof(), 7);
-  EXPECT_EQ(descartes_tesseract_kinematics_f_->dof(), 7);
+//  EXPECT_EQ(descartes_tesseract_kinematics_f_->dof(), 7);
 }
 
 TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest)
 {
   // Check that this doesn't crash
-//  descartes_tesseract_kinematics_d_->analyzeIK();
+  descartes_tesseract_kinematics_d_->analyzeIK(Eigen::Isometry3d::Identity());
 //  descartes_tesseract_kinematics_f_->analyzeIK();
   EXPECT_TRUE(true);
 }
