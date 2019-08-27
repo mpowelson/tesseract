@@ -21,10 +21,21 @@ template <typename FloatType>
 class DescartesTesseractKinematics : public descartes_light::KinematicsInterface<FloatType>
 {
 public:
+
+  using Ptr = std::shared_ptr<DescartesTesseractKinematics>;
+  using ConstPtr = std::shared_ptr<const DescartesTesseractKinematics>;
+
+//  DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
+//                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik)
+//    : DescartesTesseractKinematics(tesseract_fk, tesseract_ik, descartes_light::IsValid, descartes_light::isWithinLimits ), tesseract_fk_(tesseract_fk), tesseract_ik_(tesseract_ik)
+//  {
+//    ik_seed_ = Eigen::VectorXd::Zero(dof());
+//  }
+
   DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
-                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
+                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik/*,
                                const descartes_light::IsValidFn<FloatType>& is_valid_fn,
-                               const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn)
+                               const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn*/)
     : tesseract_fk_(tesseract_fk), tesseract_ik_(tesseract_ik)
   {
     ik_seed_ = Eigen::VectorXd::Zero(dof());
