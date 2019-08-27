@@ -2,7 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <fstream>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
+//#include <tesseract_scene_graph/parser/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <urdf_parser/urdf_parser.h>
 #include <tesseract/tesseract.h>
@@ -57,7 +57,7 @@ class DescartesTesseractKinematicsUnit : public ::testing::Test
 protected:
   Tesseract::Ptr tesseract_ptr_;
   tesseract_motion_planners::DescartesTesseractKinematics<double>::Ptr descartes_tesseract_kinematics_d_;
-  tesseract_motion_planners::DescartesTesseractKinematics<double>::Ptr descartes_tesseract_kinematics_f_;
+  tesseract_motion_planners::DescartesTesseractKinematics<float>::Ptr descartes_tesseract_kinematics_f_;
 
   tesseract_kinematics::ForwardKinematics::Ptr kdl_fk_;
   tesseract_kinematics::InverseKinematics::Ptr kdl_ik_;
@@ -76,16 +76,27 @@ protected:
     kdl_fk_ = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
     kdl_ik_ = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
 
-    descartes_tesseract_kinematics_d_ = std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<double>>(kdl_fk_, kdl_ik_);
-//    descartes_tesseract_kinematics_f_ = std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<float>>(kdl_fk_, kdl_ik_);
+    descartes_tesseract_kinematics_d_ =
+        std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<double>>(kdl_fk_, kdl_ik_);
+    descartes_tesseract_kinematics_f_ =
+        std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<float>>(kdl_fk_, kdl_ik_);
 
-//    DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
-//                                 const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
-//                                 const descartes_light::IsValidFn<FloatType>& is_valid_fn,
-//                                 const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn)
+    //    DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
+    //                                 const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
+    //                                 const descartes_light::IsValidFn<FloatType>& is_valid_fn,
+    //                                 const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn)
   }
 };
 
+/** @brief This is used to test that private members are set correctly */
+template <typename FloatType>
+class DescartesTesseractKinematicsTest : public tesseract_motion_planners::DescartesTesseractKinematics<FloatType>
+{
+public:
+  using tesseract_motion_planners::DescartesTesseractKinematics<FloatType>::DescartesTesseractKinematics;
+
+  Eigen::VectorXd getIKSeed() { return this->ik_seed_; }
+};
 
 TEST_F(DescartesTesseractKinematicsUnit, ConstructorTest)
 {
@@ -112,22 +123,39 @@ TEST_F(DescartesTesseractKinematicsUnit, DOFTest)
   EXPECT_EQ(kdl_fk_->numJoints(), 7);
   // Actual Check
   EXPECT_EQ(descartes_tesseract_kinematics_d_->dof(), 7);
-//  EXPECT_EQ(descartes_tesseract_kinematics_f_->dof(), 7);
+  EXPECT_EQ(descartes_tesseract_kinematics_f_->dof(), 7);
 }
 
 TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest)
 {
   // Check that this doesn't crash
   descartes_tesseract_kinematics_d_->analyzeIK(Eigen::Isometry3d::Identity());
-//  descartes_tesseract_kinematics_f_->analyzeIK();
+  descartes_tesseract_kinematics_f_->analyzeIK(Eigen::Isometry3f::Identity());
   EXPECT_TRUE(true);
 }
 
 TEST_F(DescartesTesseractKinematicsUnit, SetIKSeedTest)
 {
-  // TODO Create test class that checks that seed gets set
-}
+  auto kin_d = DescartesTesseractKinematicsTest<double>(kdl_fk_, kdl_ik_);
+  auto kin_f = DescartesTesseractKinematicsTest<float>(kdl_fk_, kdl_ik_);
 
+  std::vector<double> double_vec(7, 1.234567);
+  std::vector<float> float_vec(7, 1.234567f);
+  Eigen::Map<Eigen::VectorXd> double_eigen(double_vec.data(), 7);
+  Eigen::Map<Eigen::VectorXf> float_eigen(float_vec.data(), 7);
+
+  // Check when using std::vector
+  kin_d.setIKSeed(double_vec);
+  EXPECT_TRUE(kin_d.getIKSeed().isApprox(double_eigen, 0.00001));
+  kin_f.setIKSeed(float_vec);
+  EXPECT_TRUE(kin_f.getIKSeed().isApprox(double_eigen, 0.00001));
+
+  // Check when using Eigen::VectorX
+  kin_d.setIKSeed(double_eigen);
+  EXPECT_TRUE(kin_d.getIKSeed().isApprox(double_eigen, 0.00001));
+  kin_f.setIKSeed(float_eigen);
+  EXPECT_TRUE(kin_f.getIKSeed().isApprox(double_eigen, 0.00001));  // Note that the seed is stored as a VectorXd
+}
 
 int main(int argc, char** argv)
 {

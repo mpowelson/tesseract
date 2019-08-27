@@ -11,7 +11,7 @@
 namespace tesseract_motion_planners
 {
 /** @brief Provides a Descartes interface for Tesseract Kinematics
-*/
+ */
 template <typename FloatType>
 class DescartesTesseractKinematics : public descartes_light::KinematicsInterface<FloatType>
 {
@@ -27,13 +27,14 @@ public:
    */
   DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
                                const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik)
-    : DescartesTesseractKinematics(
-          tesseract_fk,
-          tesseract_ik,
-          std::bind(&descartes_light::isWithinLimits<FloatType>, std::placeholders::_1, tesseract_fk->getLimits()),
-          std::bind(&descartes_light::getRedundantSolutions<FloatType>,
-                    std::placeholders::_1,
-                    tesseract_fk->getLimits()))
+    : DescartesTesseractKinematics(tesseract_fk,
+                                   tesseract_ik,
+                                   std::bind(&descartes_light::isWithinLimits<FloatType>,
+                                             std::placeholders::_1,
+                                             tesseract_fk->getLimits().cast<FloatType>()),
+                                   std::bind(&descartes_light::getRedundantSolutions<FloatType>,
+                                             std::placeholders::_1,
+                                             tesseract_fk->getLimits().cast<FloatType>()))
   {
     ik_seed_ = Eigen::VectorXd::Zero(dof());
   }
@@ -77,7 +78,7 @@ public:
   /** @brief Sets the seed used by inverse kinematics. Must be length dof(). Default: Eigen::VectorXd::Zero(dof())**/
   void setIKSeed(const std::vector<FloatType>& seed);
 
-private:
+protected:
   tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk_;
   tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik_;
   descartes_light::IsValidFn<FloatType> is_valid_fn_;

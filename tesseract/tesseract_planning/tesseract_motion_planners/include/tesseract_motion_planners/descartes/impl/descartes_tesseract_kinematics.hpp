@@ -50,7 +50,7 @@ bool DescartesTesseractKinematics<FloatType>::fk(const FloatType* pose,
 {
   // Convert the Array to an Eigen VectorX<FloatType>
   Eigen::Matrix<FloatType, Eigen::Dynamic, 1> joints;
-  for (int i = 0; i < tesseract_fk_->numJoints(); i++)
+  for (int i = 0; static_cast<unsigned int>(i) < tesseract_fk_->numJoints(); i++)
     joints(i, 0) = pose[i];
 
   // Get the solution from the Tesseract Kinematics
@@ -120,6 +120,9 @@ template <typename FloatType>
 void DescartesTesseractKinematics<FloatType>::setIKSeed(const std::vector<FloatType>& seed)
 {
   assert(seed.size() == dof());
-  ik_seed_ = Eigen::VectorXd(seed.data());
+  std::vector<double> seed_copy;
+  for (auto& i : seed)
+    seed_copy.push_back(static_cast<double>(i));
+  ik_seed_ = Eigen::Map<Eigen::VectorXd>(seed_copy.data(), seed_copy.size());
 }
 }  // namespace tesseract_motion_planners
