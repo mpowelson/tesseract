@@ -12,36 +12,76 @@ bool DescartesTesseractKinematics<FloatType>::ik(const Eigen::Transform<FloatTyp
 }
 
 template <typename FloatType>
-bool DescartesTesseractKinematics<FloatType>::ik(const Eigen::Transform<FloatType, 3, Eigen::Isometry>& p,
-                                                 const descartes_light::IsValidFn<FloatType>& is_valid_fn,
-                                                 const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn,
-                                                 std::vector<FloatType>& solution_set) const
+bool DescartesTesseractKinematics<FloatType>::ik(
+    const Eigen::Transform<FloatType, 3, Eigen::Isometry>& p,
+    const descartes_light::IsValidFn<FloatType>& is_valid_fn,
+    const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn,
+    std::vector<FloatType>& solution_set) const
 {
-//  // Convert to appropriate Eigen types
-//  Eigen::Isometry3d p_double;
-//  p_double = p.template cast<double>();
-//  Eigen::VectorXd solution_eigen;
+  unsigned int dof = tesseract_ik_->numJoints();
 
-//  // Solve IK
-//  bool success = tesseract_ik_->calcInvKin(solution_eigen, p_double, ik_seed_);
+  // Convert to appropriate Eigen types
+  Eigen::Isometry3d p_double;
+  p_double = p.template cast<double>();
+  Eigen::VectorXd solution_eigen;
 
-//  // Convert back to vector
-//  std::vector<FloatType> solution_vec(solution_eigen.data(),
-//                                      solution_eigen.data() + solution_eigen.rows() * solution_eigen.cols());
-//  solution_set = solution_vec;
+  // Solve IK
+  if (!tesseract_ik_->calcInvKin(solution_eigen, p_double, ik_seed_))
+    return false;
 
-//  // Get redundant solutions
-//  FloatType* sol[tesseract_ik_->numJoints()];
-//  std::copy(solution_set.begin(), solution_set.end(), sol);
-//  std::vector<FloatType> redundant_sol = redundant_sol_fn(*sol);
+  // Convert back to a float array
+  Eigen::Matrix<FloatType, Eigen::Dynamic, 1> solution_float_type;
+  solution_float_type = solution_eigen.template cast<FloatType>();
+  FloatType* sol = solution_float_type.data();
 
-//  // Add redundant solutions if they are valid
-//  if (is_valid_fn(redundant_sol.data()))
-//    solution_set = redundant_sol;
-//  solution_set.insert(std::end(solution_set), std::begin(redundant_sol), std::end(redundant_sol));
+  // Apply is_valid_fn and redundant_sol_fn
 
-//  return success;
-  return true;
+  // Levi - Do we need harmonizeTowardZero(sol) here?
+
+  if (is_valid_fn && redundant_sol_fn)
+  {
+    if (is_valid_fn_(sol))
+      solution_set.insert(end(solution_set), sol, sol + dof);  // If good then add to solution set
+
+    std::vector<FloatType> redundant_sols = redundant_sol_fn(sol);
+    if (!redundant_sols.empty())
+    {
+      int num_sol = redundant_sols.size() / dof;
+      for (int s = 0; s < num_sol; ++s)
+      {
+        FloatType* redundant_sol = redundant_sols.data() + dof * s;
+        if (is_valid_fn_(redundant_sol))
+          solution_set.insert(end(solution_set), redundant_sol, redundant_sol + dof);  // If good then add to solution
+                                                                                       // set
+      }
+    }
+  }
+  else if (is_valid_fn && !redundant_sol_fn)
+  {
+    if (is_valid_fn(sol))
+      solution_set.insert(end(solution_set), sol, sol + dof);  // If good then add to solution set
+  }
+  else if (!is_valid_fn && redundant_sol_fn)
+  {
+    solution_set.insert(end(solution_set), sol, sol + dof);  // If good then add to solution set
+
+    std::vector<FloatType> redundant_sols = redundant_sol_fn(sol);
+    if (!redundant_sols.empty())
+    {
+      int num_sol = redundant_sols.size() / dof;
+      for (int s = 0; s < num_sol; ++s)
+      {
+        FloatType* redundant_sol = redundant_sols.data() + dof * s;
+        solution_set.insert(end(solution_set), redundant_sol, redundant_sol + dof);  // If good then add to solution
+                                                                                     // set
+      }
+    }
+  }
+  else
+  {
+    solution_set.insert(end(solution_set), sol, sol + dof);
+  }
+  return !solution_set.empty();
 }
 
 template <typename FloatType>

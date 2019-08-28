@@ -106,10 +106,20 @@ TEST_F(DescartesTesseractKinematicsUnit, IKTest)
   {
     tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
         kdl_fk_,
+        kdl_ik_);
+    // TODO: Test IK results
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_,
+        kdl_ik_);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_,
         kdl_ik_,
         nullptr,
         nullptr);
-    // TODO: Test IK results
   }
   {
     tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
@@ -179,7 +189,7 @@ TEST_F(DescartesTesseractKinematicsUnit, FKTest)
   EXPECT_TRUE(descartes_tesseract_kinematics_f_->fk(joints_f.data(), result_f));
 
   EXPECT_TRUE(result_d.isApprox(kdl_result_d, 0.00001));
-  EXPECT_TRUE(result_f.isApprox(kdl_result_d.cast<float>(), 0.00001));
+  EXPECT_TRUE(result_f.isApprox(kdl_result_d.cast<float>(), 0.00001f));
 }
 
 /** @brief This checks that that dof() returns the correct value*/

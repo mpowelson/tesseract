@@ -58,7 +58,9 @@ public:
     ik_seed_ = Eigen::VectorXd::Zero(dof());
   }
 
-  /** @brief Calculate inverse kinematics using isValidFn, GetRedundantSolutionsFn, and ik_seed provided */
+  /** @brief Calculate inverse kinematics using isValidFn, GetRedundantSolutionsFn, and ik_seed provided
+
+  Note: This currenlty only supports single solutions*/
   bool ik(const Eigen::Transform<FloatType, 3, Eigen::Isometry>& p,
           std::vector<FloatType>& solution_set) const override;
 
