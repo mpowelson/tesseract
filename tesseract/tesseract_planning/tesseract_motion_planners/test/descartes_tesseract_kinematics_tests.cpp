@@ -52,6 +52,13 @@ inline bool isCompletelyValid(const FloatType* vertex)
   return true;
 }
 
+template <typename FloatType>
+inline std::vector<FloatType> noRedundantSolutions(const FloatType* sol, unsigned int& dof)
+{
+  std::vector<FloatType> redundant_sols(sol, sol + dof);
+  return redundant_sols;
+}
+
 class DescartesTesseractKinematicsUnit : public ::testing::Test
 {
 protected:
@@ -80,11 +87,6 @@ protected:
         std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<double>>(kdl_fk_, kdl_ik_);
     descartes_tesseract_kinematics_f_ =
         std::make_shared<tesseract_motion_planners::DescartesTesseractKinematics<float>>(kdl_fk_, kdl_ik_);
-
-    //    DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
-    //                                 const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
-    //                                 const descartes_light::IsValidFn<FloatType>& is_valid_fn,
-    //                                 const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn)
   }
 };
 
@@ -98,25 +100,89 @@ public:
   Eigen::VectorXd getIKSeed() { return this->ik_seed_; }
 };
 
-TEST_F(DescartesTesseractKinematicsUnit, ConstructorTest)
-{
-  // Test that the constructors all work
-}
-
 TEST_F(DescartesTesseractKinematicsUnit, IKTest)
 {
-  // Test the IK
-
-  // Test the redundant solutions work
-
-  // Test the isvalid works
+  unsigned int dof = kdl_fk_->numJoints();
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_,
+        kdl_ik_,
+        nullptr,
+        nullptr);
+    // TODO: Test IK results
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_,
+        kdl_ik_,
+        nullptr,
+        nullptr);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_,
+        kdl_ik_,
+        &isNotValid<double>,
+        nullptr);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_,
+        kdl_ik_,
+        &isNotValid<float>,
+        nullptr);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_,
+        kdl_ik_,
+        nullptr,
+        std::bind(&noRedundantSolutions<double>, std::placeholders::_1, dof));
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_,
+        kdl_ik_,
+        nullptr,
+        std::bind(&noRedundantSolutions<float>, std::placeholders::_1, dof));
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_,
+        kdl_ik_,
+        &isNotValid<double>,
+        std::bind(&noRedundantSolutions<double>, std::placeholders::_1, dof));
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_,
+        kdl_ik_,
+        &isNotValid<float>,
+        std::bind(&noRedundantSolutions<float>, std::placeholders::_1, dof));
+  }
 }
 
+/** @brief This checks fk() against calling the tesseract kinematics object directly */
 TEST_F(DescartesTesseractKinematicsUnit, FKTest)
 {
-  // Test the FK
+  Eigen::VectorXd joints_d(7);
+  Eigen::VectorXf joints_f(7);
+  joints_d << 0., 0.25, 0.5, 0.75, 1.0, 1.25, 1.5;
+  joints_f << 0., 0.25, 0.5, 0.75, 1.0, 1.25, 1.5;
+  Eigen::Isometry3d kdl_result_d = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d result_d = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3f result_f = Eigen::Isometry3f::Identity();
+
+  // Test the fk against the tesseract object directly
+  kdl_fk_->calcFwdKin(kdl_result_d, joints_d);
+  EXPECT_TRUE(descartes_tesseract_kinematics_d_->fk(joints_d.data(), result_d));
+  EXPECT_TRUE(descartes_tesseract_kinematics_f_->fk(joints_f.data(), result_f));
+
+  EXPECT_TRUE(result_d.isApprox(kdl_result_d, 0.00001));
+  EXPECT_TRUE(result_f.isApprox(kdl_result_d.cast<float>(), 0.00001));
 }
 
+/** @brief This checks that that dof() returns the correct value*/
 TEST_F(DescartesTesseractKinematicsUnit, DOFTest)
 {
   // Sanity Check that urdf has 7 joints
@@ -126,6 +192,7 @@ TEST_F(DescartesTesseractKinematicsUnit, DOFTest)
   EXPECT_EQ(descartes_tesseract_kinematics_f_->dof(), 7);
 }
 
+/** @brief Since analyzeIK() does not have any results, this just checkst that it doesn't crash */
 TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest)
 {
   // Check that this doesn't crash
@@ -134,6 +201,7 @@ TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest)
   EXPECT_TRUE(true);
 }
 
+/** @brief This tests that the ik seed is set correctly */
 TEST_F(DescartesTesseractKinematicsUnit, SetIKSeedTest)
 {
   auto kin_d = DescartesTesseractKinematicsTest<double>(kdl_fk_, kdl_ik_);

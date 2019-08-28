@@ -48,14 +48,16 @@ template <typename FloatType>
 bool DescartesTesseractKinematics<FloatType>::fk(const FloatType* pose,
                                                  Eigen::Transform<FloatType, 3, Eigen::Isometry>& solution) const
 {
-  // Convert the Array to an Eigen VectorX<FloatType>
-  Eigen::Matrix<FloatType, Eigen::Dynamic, 1> joints;
+  assert(pose);
+
+  // Convert the Array to an Eigen VectorXd
+  Eigen::VectorXd joints(tesseract_fk_->numJoints());
   for (int i = 0; static_cast<unsigned int>(i) < tesseract_fk_->numJoints(); i++)
     joints(i, 0) = pose[i];
 
   // Get the solution from the Tesseract Kinematics
   Eigen::Isometry3d solution_double;
-  bool success /*= tesseract_fk_->calcFwdKin(solution_double, joints)*/;
+  bool success = tesseract_fk_->calcFwdKin(solution_double, joints);
 
   // Cast from double to FloatType
   solution = solution_double.cast<FloatType>();
