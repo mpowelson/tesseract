@@ -33,53 +33,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/ompl_freespace_planner.h>
-#include <tesseract_motion_planners/ompl/conversions.h>
-#include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
-#include <tesseract_motion_planners/ompl/discrete_valid_state_sampler.h>
 
-namespace tesseract_motion_planners
+#include <tesseract_planners/ompl/ompl_freespace_planner.h>
+#include <tesseract_planners/ompl/conversions.h>
+#include <tesseract_planners/ompl/continuous_motion_validator.h>
+#include <tesseract_planners/ompl/discrete_valid_state_sampler.h>
+
+namespace tesseract_planners
 {
-OMPLFreespacePlannerStatusCategory::OMPLFreespacePlannerStatusCategory(std::string name) : name_(name) {}
-const std::string& OMPLFreespacePlannerStatusCategory::name() const noexcept { return name_; }
-std::string OMPLFreespacePlannerStatusCategory::message(int code) const
-{
-  switch (code)
-  {
-    case IsConfigured:
-    {
-      return "Is Configured";
-    }
-    case SolutionFound:
-    {
-      return "Found valid solution";
-    }
-    case IsNotConfigured:
-    {
-      return "Planner is not configured, must call setConfiguration prior to calling solve.";
-    }
-    case FailedToParseConfig:
-    {
-      return "Failed to parse config data";
-    }
-    case FailedToFindValidSolution:
-    {
-      return "Failed to find valid solution";
-    }
-    default:
-    {
-      assert(false);
-      return "";
-    }
-  }
-}
 
 /** @brief Construct a basic planner */
 template <typename PlannerType>
 OMPLFreespacePlanner<PlannerType>::OMPLFreespacePlanner(std::string name)
-  : MotionPlanner(std::move(name))
-  , config_(nullptr)
-  , status_category_(std::make_shared<const OMPLFreespacePlannerStatusCategory>(name))
+  : BasicPlanner(name)
 {
 }
 
@@ -91,26 +57,17 @@ bool OMPLFreespacePlanner<PlannerType>::terminate()
 }
 
 template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response)
+bool OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response)
 {
-  tesseract_common::StatusCode config_status = isConfigured();
-  if (!config_status)
-  {
-    response.status = config_status;
-    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-    return config_status;
-  }
-
-  tesseract_motion_planners::PlannerResponse planning_response;
+  tesseract_planners::PlannerResponse planning_response;
 
   // Solve problem. Results are stored in the response
-  ompl::base::PlannerStatus status = simple_setup_->solve(config_->planning_time);
+  bool status = simple_setup_->solve(config_->planning_time);
 
   if (!status)
   {
-    planning_response.status =
-        tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::FailedToFindValidSolution, status_category_);
-    return planning_response.status;
+    planning_response.status_code = false;
+    return planning_response.status_code;
   }
 
   if (config_->simplify)
@@ -118,13 +75,11 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
 
   ompl::geometric::PathGeometric& path = simple_setup_->getSolutionPath();
 
-  planning_response.status =
-      tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::SolutionFound, status_category_);
-  planning_response.joint_trajectory.trajectory = toTrajArray(path);
-  planning_response.joint_trajectory.joint_names = kin_->getJointNames();
+  planning_response.status_code = true;
+  planning_response.trajectory = toTrajArray(path);
 
   response = std::move(planning_response);
-  return planning_response.status;
+  return planning_response.status_code;
 }
 
 template <typename PlannerType>
@@ -137,15 +92,6 @@ void OMPLFreespacePlanner<PlannerType>::clear()
   discrete_contact_manager_ = nullptr;
   continuous_contact_manager_ = nullptr;
   simple_setup_ = nullptr;
-}
-
-template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::isConfigured() const
-{
-  if (config_ == nullptr)
-    return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::IsNotConfigured, status_category_);
-
-  return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::IsConfigured, status_category_);
 }
 
 template <typename PlannerType>
@@ -166,7 +112,7 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
     return false;
   }
 
-  const tesseract_environment::Environment::ConstPtr& env = config.tesseract->getEnvironmentConst();
+  const tesseract_environment::EnvironmentConstPtr& env = config.tesseract->getEnvironmentConst();
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map
   // to determine all active links.
   adj_map_ = std::make_shared<tesseract_environment::AdjacencyMap>(
@@ -205,14 +151,14 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
     simple_setup_->getSpaceInformation()->setMotionValidator(config.mv);
   }
 
-  JointWaypoint::Ptr start_position;
-  JointWaypoint::Ptr end_position;
+  JointWaypointPtr start_position;
+  JointWaypointPtr end_position;
 
   // Set initial point
   auto start_type = config.start_waypoint->getType();
   switch (start_type)
   {
-    case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
+    case tesseract_planners::WaypointType::JOINT_WAYPOINT:
     {
       start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint);
       break;
@@ -228,7 +174,7 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   auto end_type = config.end_waypoint->getType();
   switch (end_type)
   {
-    case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
+    case tesseract_planners::WaypointType::JOINT_WAYPOINT:
     {
       end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint);
       break;

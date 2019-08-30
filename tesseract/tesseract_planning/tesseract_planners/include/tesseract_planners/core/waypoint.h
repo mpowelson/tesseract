@@ -67,8 +67,26 @@ protected:
 class JointWaypoint : public Waypoint
 {
 public:
-  // TODO: constructor that takes joint position vector
   JointWaypoint() { waypoint_type_ = WaypointType::JOINT_WAYPOINT; }
+
+//  JointWaypoint(Eigen::VectorXd joint_positions)
+//    : Waypoint(WaypointType::JOINT_WAYPOINT)
+//    , joint_positions_(joint_positions)
+//  {
+//    coeffs_ = Eigen::VectorXd::Ones(joint_positions_.size());
+//  }
+
+//  JointWaypoint(std::vector<double> joint_positions)
+//    : Waypoint(WaypointType::JOINT_WAYPOINT)
+//  {
+//    joint_positions_.resize(joint_positions.size());
+//    for (long i = 0; i < static_cast<long>(joint_positions.size()); ++i)
+//      joint_positions_[i] = joint_positions[static_cast<size_t>(i)];
+
+//    coeffs_ = Eigen::VectorXd::Ones(joint_positions_.size());
+//  }
+
+  Eigen::VectorXd getPositions() {return joint_positions_;}
   /** Stores the joint values associated with this waypoint (radians). Must be in the same order as the joints in the
    * kinematics object*/
   Eigen::VectorXd joint_positions_;

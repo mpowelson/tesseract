@@ -5,12 +5,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/SimpleSetup.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/core/planner.h>
-#include <tesseract_motion_planners/core/waypoint.h>
+#include <tesseract_planners/core/planner.h>
+#include <tesseract_planners/core/waypoint.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planners
 {
-class OMPLFreespacePlannerStatusCategory;
 
 struct OMPLFreespacePlannerConfig
 {
@@ -18,9 +17,9 @@ struct OMPLFreespacePlannerConfig
 
   OMPLFreespacePlannerConfig() {}
   /** @brief Determines the constraint placed at the start of the trajectory */
-  Waypoint::Ptr start_waypoint;
+  WaypointPtr start_waypoint;
   /** @brief Determines the constraint placed at the end of the trajectory */
-  Waypoint::Ptr end_waypoint;
+  WaypointPtr end_waypoint;
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check = true;
@@ -56,7 +55,7 @@ struct OMPLFreespacePlannerConfig
  * take a start and end point and automate the generation of the TrajOpt problem.
  */
 template <typename PlannerType>
-class OMPLFreespacePlanner : public MotionPlanner
+class OMPLFreespacePlanner : public BasicPlanner
 {
 public:
   /** @brief Construct a basic planner */
@@ -85,17 +84,12 @@ public:
    * @param response The results of the optimization. Primary output is the optimized joint trajectory
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response) override;
+  bool solve(PlannerResponse& response) override;
 
   bool terminate() override;
 
   void clear() override;
 
-  /**
-   * @brief checks whether the planner is properly configure for solving a motion plan
-   * @return True when it is configured correctly, false otherwise
-   */
-  tesseract_common::StatusCode isConfigured() const override;
 
 private:
   ompl::base::ValidStateSamplerPtr allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const;
@@ -104,9 +98,6 @@ protected:
   /** @brief The ompl planner planner */
   std::shared_ptr<OMPLFreespacePlannerConfig> config_;
 
-  /** @brief The planners status codes */
-  std::shared_ptr<const OMPLFreespacePlannerStatusCategory> status_category_;
-
   /** @brief The ompl planner motion validator */
   ompl::base::MotionValidatorPtr motion_validator_;
 
@@ -114,33 +105,13 @@ protected:
   ompl::geometric::SimpleSetupPtr simple_setup_;
 
   /** @brief The tesseract kinematics object */
-  tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
+  tesseract_kinematics::ForwardKinematicsConstPtr kin_;
 
   /** @brief The mapping of environment links to kinematics links */
-  tesseract_environment::AdjacencyMap::ConstPtr adj_map_;
+  tesseract_environment::AdjacencyMapConstPtr adj_map_;
 
-  tesseract_collision::DiscreteContactManager::Ptr discrete_contact_manager_;
-  tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
-};
-
-class OMPLFreespacePlannerStatusCategory : public tesseract_common::StatusCategory
-{
-public:
-  OMPLFreespacePlannerStatusCategory(std::string name);
-  const std::string& name() const noexcept override;
-  std::string message(int code) const override;
-
-  enum
-  {
-    IsConfigured = 1,
-    SolutionFound = 0,
-    IsNotConfigured = -1,
-    FailedToParseConfig = -2,
-    FailedToFindValidSolution = -3,
-  };
-
-private:
-  std::string name_;
+  tesseract_collision::DiscreteContactManagerPtr discrete_contact_manager_;
+  tesseract_collision::ContinuousContactManagerPtr continuous_contact_manager_;
 };
 
 }  // namespace tesseract_motion_planners

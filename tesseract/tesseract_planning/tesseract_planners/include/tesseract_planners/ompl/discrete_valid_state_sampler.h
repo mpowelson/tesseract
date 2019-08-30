@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planners
 {
 
 class DiscreteValidStateSampler : public ompl::base::ValidStateSampler
@@ -18,9 +18,9 @@ class DiscreteValidStateSampler : public ompl::base::ValidStateSampler
 public:
 
   DiscreteValidStateSampler(const ompl::base::SpaceInformation *si,
-                            tesseract_environment::Environment::ConstPtr env,
-                            tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                            tesseract_collision::DiscreteContactManager::Ptr contact_manager);
+                            tesseract_environment::EnvironmentConstPtr env,
+                            tesseract_kinematics::ForwardKinematicsConstPtr kin,
+                            tesseract_collision::DiscreteContactManagerPtr contact_manager);
 
   ~DiscreteValidStateSampler() override = default;
 
@@ -32,9 +32,9 @@ private:
 
 protected:
   ompl::base::StateSamplerPtr sampler_;
-  tesseract_environment::Environment::ConstPtr env_;
-  tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
-  tesseract_collision::DiscreteContactManager::Ptr contact_manager_;
+  tesseract_environment::EnvironmentConstPtr env_;
+  tesseract_kinematics::ForwardKinematicsConstPtr kin_;
+  tesseract_collision::DiscreteContactManagerPtr contact_manager_;
 };
 
 }

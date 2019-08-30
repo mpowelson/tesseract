@@ -33,9 +33,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/planners/prm/SPARS.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/impl/ompl_freespace_planner.hpp>
+#include <tesseract_planners/ompl/impl/ompl_freespace_planner.hpp>
 
-namespace tesseract_motion_planners
+namespace tesseract_planners
 {
 // Explicit template instantiation
 template class OMPLFreespacePlanner<ompl::geometric::RRTConnect>;

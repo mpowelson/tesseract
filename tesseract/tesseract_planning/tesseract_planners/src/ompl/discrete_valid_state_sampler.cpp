@@ -5,15 +5,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/SpaceInformation.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/discrete_valid_state_sampler.h>
+#include <tesseract_planners/ompl/discrete_valid_state_sampler.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planners
 {
 
 DiscreteValidStateSampler::DiscreteValidStateSampler(const ompl::base::SpaceInformation *si,
-                                                     tesseract_environment::Environment::ConstPtr env,
-                                                     tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                                                     tesseract_collision::DiscreteContactManager::Ptr contact_manager)
+                                                     tesseract_environment::EnvironmentConstPtr env,
+                                                     tesseract_kinematics::ForwardKinematicsConstPtr kin,
+                                                     tesseract_collision::DiscreteContactManagerPtr contact_manager)
   : ValidStateSampler(si)
   , sampler_(si->allocStateSampler())
   , env_(std::move(env))
@@ -61,7 +61,7 @@ bool DiscreteValidStateSampler::isCollisionFree(ompl::base::State *state)
   const auto dof = kin_->numJoints();
 
   Eigen::Map<Eigen::VectorXd> joint_angles(s->values, long(dof));
-  tesseract_environment::EnvState::ConstPtr env_state = env_->getState(kin_->getJointNames(), joint_angles);
+  tesseract_environment::EnvStateConstPtr env_state = env_->getState(kin_->getJointNames(), joint_angles);
 
   contact_manager_->setCollisionObjectsTransform(env_state->transforms);
 
