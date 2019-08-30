@@ -39,9 +39,9 @@ namespace tesseract_planners
 {
 // Explicit template instantiation
 template class OMPLFreespacePlanner<ompl::geometric::RRTConnect>;
-template class OMPLFreespacePlanner<ompl::geometric::PRM>;
-template class OMPLFreespacePlanner<ompl::geometric::PRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::LazyPRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::SPARS>;
+//template class OMPLFreespacePlanner<ompl::geometric::PRM>;
+//template class OMPLFreespacePlanner<ompl::geometric::PRMstar>;
+//template class OMPLFreespacePlanner<ompl::geometric::LazyPRMstar>;
+//template class OMPLFreespacePlanner<ompl::geometric::SPARS>;
 
 }  // namespace tesseract_motion_planners

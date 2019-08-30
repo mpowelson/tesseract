@@ -197,7 +197,8 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   simple_setup_->setStartAndGoalStates(start_state, goal_state);
 
   // Set the ompl planner
-  ompl::base::PlannerPtr planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
+  std::shared_ptr<PlannerType> planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
+  planner->setRange(0.1);
   simple_setup_->setPlanner(planner);
 
   discrete_contact_manager_ = env->getDiscreteContactManager();
