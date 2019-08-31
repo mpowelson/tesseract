@@ -31,6 +31,9 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
+#include <ompl/tools/multiplan/ParallelPlan.h>
+#include <ompl/tools/multiplan/OptimizePlan.h>
+#include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 
@@ -62,10 +65,18 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::solve(PlannerRespon
 {
   tesseract_planners::PlannerResponse planning_response;
 
-  // Solve problem. Results are stored in the response
-  bool status = simple_setup_->solve(config_->planning_time);
+  ompl::tools::OptimizePlan op(simple_setup_->getProblemDefinition());
+  for (auto i = 0; i < config_->num_threads; ++i)
+  {
+    std::shared_ptr<PlannerType> planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
+    config_->settings.apply(*planner);
+    op.addPlanner(planner);
+  }
 
-  if (!status)
+  // Solve problem. Results are stored in the response
+  ompl::base::PlannerStatus status = op.solve(config_->planning_time, config_->max_solutions, config_->num_threads);
+
+  if (!status || !simple_setup_->haveExactSolutionPath())
   {
     planning_response.status_code = false;
     return planning_response.status_code;
@@ -141,24 +152,6 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(co
   state_space_ptr->setLongestValidSegmentFraction(config.longest_valid_segment_fraction);
   simple_setup_ = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
 
-  // Setup state checking functionality
-  if (config_->svc != nullptr)
-    simple_setup_->setStateValidityChecker(config_->svc);
-
-  if (config_->collision_check)
-    simple_setup_->getSpaceInformation()->setValidStateSamplerAllocator(std::bind(&OMPLFreespacePlanner::allocDiscreteValidStateSampler, this, std::placeholders::_1));
-
-  if (config_->collision_check && config_->collision_continuous && config_->mv == nullptr)
-  {
-    ompl::base::MotionValidatorPtr mv =
-        std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
-    simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
-  }
-  else if (config_->mv != nullptr)
-  {
-    simple_setup_->getSpaceInformation()->setMotionValidator(config_->mv);
-  }
-
   JointWaypointPtr start_position;
   JointWaypointPtr end_position;
 
@@ -204,10 +197,26 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(co
 
   simple_setup_->setStartAndGoalStates(start_state, goal_state);
 
-  // Set the ompl planner
-  std::shared_ptr<PlannerType> planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
-  config_->settings.apply(*planner);
-  simple_setup_->setPlanner(planner);
+  // Setup state checking functionality
+  if (config_->svc != nullptr)
+    simple_setup_->setStateValidityChecker(config_->svc);
+
+  if (config_->collision_check)
+    simple_setup_->getSpaceInformation()->setValidStateSamplerAllocator(std::bind(&OMPLFreespacePlanner::allocDiscreteValidStateSampler, this, std::placeholders::_1));
+
+  if (config_->collision_check && config_->collision_continuous && config_->mv == nullptr)
+  {
+    ompl::base::MotionValidatorPtr mv =
+        std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
+    simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
+  }
+  else if (config_->mv != nullptr)
+  {
+    simple_setup_->getSpaceInformation()->setMotionValidator(config_->mv);
+  }
+
+  // make sure the planners run until the time limit, and get the best possible solution
+  simple_setup_->getProblemDefinition()->setOptimizationObjective(std::make_shared<ompl::base::PathLengthOptimizationObjective>(simple_setup_->getSpaceInformation()));
 
   discrete_contact_manager_ = env->getDiscreteContactManager();
   discrete_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
