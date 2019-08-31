@@ -11,6 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planners
 {
 
+template <typename PlannerSettingsType>
 struct OMPLFreespacePlannerConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -31,10 +32,16 @@ struct OMPLFreespacePlannerConfig
   double planning_time = 5.0;
   /** @brief Simplify trajectory */
   bool simplify = true;
+  /** @brief This scales the variables search space. Must be same size as number of joints.
+   *         If empty it defaults to all ones */
+  Eigen::VectorXd weights;
 
   /** @brief Set the resolution at which state validity needs to be
    * verified in order for a motion between two states to be considered valid. */
   double longest_valid_segment_fraction = 0.01;  // 1%
+
+  /** @brief Planner settings */
+  PlannerSettingsType settings;
 
   /** @brief Tesseract object. ***REQUIRED*** */
   tesseract::Tesseract::ConstPtr tesseract;
@@ -54,7 +61,7 @@ struct OMPLFreespacePlannerConfig
  * @brief This planner is intended to provide an easy to use interface to TrajOpt for freespace planning. It is made to
  * take a start and end point and automate the generation of the TrajOpt problem.
  */
-template <typename PlannerType>
+template <typename PlannerType, typename PlannerSettingsType>
 class OMPLFreespacePlanner : public BasicPlanner
 {
 public:
@@ -69,7 +76,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(const OMPLFreespacePlannerConfig& config);
+    bool setConfiguration(const OMPLFreespacePlannerConfig<PlannerSettingsType>& config);
 
   /**
    * @brief Sets up the TrajOpt problem then solves using TrajOptMotionPlanner. It is intended to simplify setting up
@@ -93,10 +100,11 @@ public:
 
 private:
   ompl::base::ValidStateSamplerPtr allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const;
+  ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace *space) const;
 
 protected:
   /** @brief The ompl planner planner */
-  std::shared_ptr<OMPLFreespacePlannerConfig> config_;
+  std::shared_ptr<OMPLFreespacePlannerConfig<PlannerSettingsType>> config_;
 
   /** @brief The ompl planner motion validator */
   ompl::base::MotionValidatorPtr motion_validator_;
