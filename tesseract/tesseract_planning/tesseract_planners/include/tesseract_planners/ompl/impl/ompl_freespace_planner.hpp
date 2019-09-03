@@ -226,6 +226,34 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(co
   continuous_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
   continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
+  // Check the start and end point for collisions
+  tesseract_collision::ContactResultMap collisions;
+
+  // Start waypoint
+  collisions.clear();
+  tesseract_environment::EnvStatePtr state0 = env->getState(joint_names, start_position->joint_positions_);
+  for (const auto& link_name : discrete_contact_manager_->getActiveCollisionObjects())
+    discrete_contact_manager_->setCollisionObjectsTransform(link_name, state0->transforms[link_name]);
+
+  discrete_contact_manager_->contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
+  if (collisions.size() > 0)
+  {
+    CONSOLE_BRIDGE_logError("OMPL Planner setConfiguration Failed. Start Waypoint is in collision");
+    return false;
+  }
+  // End waypoint
+  collisions.clear();
+  tesseract_environment::EnvStatePtr state1 = env->getState(joint_names, end_position->joint_positions_);
+  for (const auto& link_name : discrete_contact_manager_->getActiveCollisionObjects())
+    discrete_contact_manager_->setCollisionObjectsTransform(link_name, state1->transforms[link_name]);
+
+  discrete_contact_manager_->contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
+  if (collisions.size() > 0)
+  {
+    CONSOLE_BRIDGE_logError("OMPL Planner setConfiguration Failed. End Waypoint is in collision");
+    return false;
+  }
+
   return true;
 }
 
