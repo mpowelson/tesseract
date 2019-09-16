@@ -2,7 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <fstream>
-//#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <urdf_parser/urdf_parser.h>
 #include <tesseract/tesseract.h>
@@ -40,24 +40,46 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
+/** @brief Always returns false */
 template <typename FloatType>
 inline bool isNotValid(const FloatType* vertex)
 {
   return false;
 }
 
+/** @brief Always returns true */
 template <typename FloatType>
 inline bool isCompletelyValid(const FloatType* vertex)
 {
   return true;
 }
 
+/** @brief Returns an empty vector corresponding to no redundant solutions*/
 template <typename FloatType>
 inline std::vector<FloatType> noRedundantSolutions(const FloatType* sol, unsigned int& dof)
+{
+  std::vector<FloatType> redundant_sols;
+  redundant_sols.clear();
+  return redundant_sols;
+}
+
+/** @brief Returns the first solution as a duplicate redundant solution */
+template <typename FloatType>
+inline std::vector<FloatType> oneRedundantSolution(const FloatType* sol, unsigned int& dof)
 {
   std::vector<FloatType> redundant_sols(sol, sol + dof);
   return redundant_sols;
 }
+
+/** @brief This is used to test that private members are set correctly */
+template <typename FloatType>
+class DescartesTesseractKinematicsTest : public tesseract_motion_planners::DescartesTesseractKinematics<FloatType>
+{
+public:
+  using tesseract_motion_planners::DescartesTesseractKinematics<FloatType>::DescartesTesseractKinematics;
+
+  Eigen::VectorXd getIKSeed() { return this->ik_seed_; }
+};
 
 class DescartesTesseractKinematicsUnit : public ::testing::Test
 {
@@ -90,85 +112,166 @@ protected:
   }
 };
 
-/** @brief This is used to test that private members are set correctly */
-template <typename FloatType>
-class DescartesTesseractKinematicsTest : public tesseract_motion_planners::DescartesTesseractKinematics<FloatType>
+/** @brief Used to test IK by running the IK results through FK to check that they match up. This also checks that the
+ * number of solutions matches the user defined expected number and that ik returns false when no solutions are found*/
+static void testIKDouble(tesseract_motion_planners::DescartesTesseractKinematics<double> kin,
+                         Eigen::Isometry3d pose_d,
+                         Eigen::VectorXd seed_d,
+                         int expected_sols)
 {
-public:
-  using tesseract_motion_planners::DescartesTesseractKinematics<FloatType>::DescartesTesseractKinematics;
+  int dof = kin.dof();
+  kin.setIKSeed(seed_d);
+  std::vector<double> ik_solutions;
+  // IK should fail if there are no solutions
+  EXPECT_EQ(kin.ik(pose_d, ik_solutions), static_cast<bool>(expected_sols));
 
-  Eigen::VectorXd getIKSeed() { return this->ik_seed_; }
-};
+  int num_sols = ik_solutions.size() / dof;
+  EXPECT_EQ(num_sols, expected_sols);
 
+  // Passing each solution through FK should yield the input to IK
+  for (int i = 0; i < num_sols; i++)
+  {
+    Eigen::Isometry3d fk_result;
+    EXPECT_TRUE(kin.fk(ik_solutions.data() + i * dof, fk_result));
+    EXPECT_TRUE(pose_d.translation().isApprox(fk_result.translation(), 1e-4));
+
+    Eigen::Quaterniond rot_pose(pose_d.rotation());
+    Eigen::Quaterniond rot_result(fk_result.rotation());
+    EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3));
+  }
+}
+
+/** @brief Used to test IK by running the IK results through FK to check that they match up. This also checks that the
+ * number of solutions matches the user defined expected number and that ik returns false when no solutions are found*/
+static void testIKFloat(tesseract_motion_planners::DescartesTesseractKinematics<float> kin,
+                        Eigen::Isometry3f pose_f,
+                        Eigen::VectorXf seed_f,
+                        int expected_sols)
+{
+  int dof = kin.dof();
+  kin.setIKSeed(seed_f);
+  std::vector<float> ik_solutions;
+  // IK should fail if there are no solutions
+  EXPECT_EQ(kin.ik(pose_f, ik_solutions), static_cast<bool>(expected_sols));
+
+  int num_sols = ik_solutions.size() / dof;
+  EXPECT_EQ(num_sols, expected_sols);
+
+  // Passing each solution through FK should yield the input to IK
+  for (int i = 0; i < num_sols; i++)
+  {
+    Eigen::Isometry3f fk_result;
+    EXPECT_TRUE(kin.fk(ik_solutions.data() + i * dof, fk_result));
+    EXPECT_TRUE(pose_f.translation().isApprox(fk_result.translation(), 1e-4));
+
+    Eigen::Quaternionf rot_pose(pose_f.rotation());
+    Eigen::Quaternionf rot_result(fk_result.rotation());
+    EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3));
+  }
+}
+
+/** @brief Tests IK by calculating it for a pose and then testing each solution that is returned against the fk solution
+ *
+ * Note that these tests assume that the default IK solver only returns one solution
+ */
 TEST_F(DescartesTesseractKinematicsUnit, IKTest)
 {
-  unsigned int dof = kdl_fk_->numJoints();
+  unsigned int dof = kdl_ik_->numJoints();
+  Eigen::Isometry3d pose_d;
+  pose_d.setIdentity();
+  pose_d.translation()[0] = 0;
+  pose_d.translation()[1] = 0;
+  pose_d.translation()[2] = 1.306;
+  Eigen::Isometry3f pose_f = pose_d.cast<float>();
+
+  Eigen::VectorXd seed_d;
+  seed_d.resize(7);
+  seed_d(0) = -0.785398;
+  seed_d(1) = 0.785398;
+  seed_d(2) = -0.785398;
+  seed_d(3) = 0.785398;
+  seed_d(4) = -0.785398;
+  seed_d(5) = 0.785398;
+  seed_d(6) = -0.785398;
+  Eigen::VectorXf seed_f = seed_d.cast<float>();
+
   {
-    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
-        kdl_fk_,
-        kdl_ik_);
-    // TODO: Test IK results
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(kdl_fk_, kdl_ik_);
+    CONSOLE_BRIDGE_logDebug("Double: default, default");
+    testIKDouble(kin, pose_d, seed_d, 1);
   }
   {
-    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
-        kdl_fk_,
-        kdl_ik_);
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(kdl_fk_, kdl_ik_);
+    CONSOLE_BRIDGE_logDebug("Float: default, default");
+    testIKFloat(kin, pose_f, seed_f, 1);
   }
   {
-    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
-        kdl_fk_,
-        kdl_ik_,
-        nullptr,
-        nullptr);
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(kdl_fk_, kdl_ik_, nullptr, nullptr);
+    CONSOLE_BRIDGE_logDebug("Double: nullptr, nullptr");
+    testIKDouble(kin, pose_d, seed_d, 1);
   }
   {
-    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
-        kdl_fk_,
-        kdl_ik_,
-        nullptr,
-        nullptr);
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(kdl_fk_, kdl_ik_, nullptr, nullptr);
+    CONSOLE_BRIDGE_logDebug("Float: nullptr, nullptr");
+    testIKFloat(kin, pose_f, seed_f, 1);
   }
   {
-    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
-        kdl_fk_,
-        kdl_ik_,
-        &isNotValid<double>,
-        nullptr);
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(kdl_fk_, kdl_ik_, &isNotValid<double>, nullptr);
+    CONSOLE_BRIDGE_logDebug("Double: isNotValid, nullptr");
+    testIKDouble(kin, pose_d, seed_d, 0);
   }
   {
-    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
-        kdl_fk_,
-        kdl_ik_,
-        &isNotValid<float>,
-        nullptr);
-  }
-  {
-    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
-        kdl_fk_,
-        kdl_ik_,
-        nullptr,
-        std::bind(&noRedundantSolutions<double>, std::placeholders::_1, dof));
-  }
-  {
-    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
-        kdl_fk_,
-        kdl_ik_,
-        nullptr,
-        std::bind(&noRedundantSolutions<float>, std::placeholders::_1, dof));
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(kdl_fk_, kdl_ik_, &isNotValid<float>, nullptr);
+    CONSOLE_BRIDGE_logDebug("Float: isNotValid, nullptr");
+    testIKFloat(kin, pose_f, seed_f, 0);
   }
   {
     tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
-        kdl_fk_,
-        kdl_ik_,
-        &isNotValid<double>,
-        std::bind(&noRedundantSolutions<double>, std::placeholders::_1, dof));
+        kdl_fk_, kdl_ik_, &isCompletelyValid<double>, nullptr);
+    CONSOLE_BRIDGE_logDebug("Double: isCompletelyValid, nullptr");
+    testIKDouble(kin, pose_d, seed_d, 1);
   }
   {
     tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
-        kdl_fk_,
-        kdl_ik_,
-        &isNotValid<float>,
-        std::bind(&noRedundantSolutions<float>, std::placeholders::_1, dof));
+        kdl_fk_, kdl_ik_, &isCompletelyValid<float>, nullptr);
+    CONSOLE_BRIDGE_logDebug("Float: isCompletelyValid, nullptr");
+    testIKFloat(kin, pose_f, seed_f, 1);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_, kdl_ik_, nullptr, std::bind(&noRedundantSolutions<double>, std::placeholders::_1, dof));
+    CONSOLE_BRIDGE_logDebug("Double: nullptr, noRedundantSolutions");
+    testIKDouble(kin, pose_d, seed_d, 1);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_, kdl_ik_, nullptr, std::bind(&noRedundantSolutions<float>, std::placeholders::_1, dof));
+    CONSOLE_BRIDGE_logDebug("Float: nullptr, noRedundantSolutions");
+    testIKFloat(kin, pose_f, seed_f, 1);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_, kdl_ik_, nullptr, std::bind(&oneRedundantSolution<double>, std::placeholders::_1, dof));
+    CONSOLE_BRIDGE_logDebug("Double: nullptr, oneRedundantSolution");
+    testIKDouble(kin, pose_d, seed_d, 2);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_, kdl_ik_, nullptr, std::bind(&oneRedundantSolution<float>, std::placeholders::_1, dof));
+    CONSOLE_BRIDGE_logDebug("Float: nullptr, oneRedundantSolution");
+    testIKFloat(kin, pose_f, seed_f, 2);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<double> kin(
+        kdl_fk_, kdl_ik_, &isNotValid<double>, std::bind(&noRedundantSolutions<double>, std::placeholders::_1, dof));
+    CONSOLE_BRIDGE_logDebug("Double: isNotValid, noRedundantSolutions");
+    testIKDouble(kin, pose_d, seed_d, 0);
+  }
+  {
+    tesseract_motion_planners::DescartesTesseractKinematics<float> kin(
+        kdl_fk_, kdl_ik_, &isNotValid<float>, std::bind(&noRedundantSolutions<float>, std::placeholders::_1, dof));
+    CONSOLE_BRIDGE_logDebug("Float: isNotValid, noRedundantSolutions");
+    testIKFloat(kin, pose_f, seed_f, 0);
   }
 }
 

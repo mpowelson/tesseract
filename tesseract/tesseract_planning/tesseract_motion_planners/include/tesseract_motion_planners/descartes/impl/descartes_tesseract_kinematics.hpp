@@ -68,8 +68,8 @@ bool DescartesTesseractKinematics<FloatType>::ik(
     std::vector<FloatType> redundant_sols = redundant_sol_fn(sol);
     if (!redundant_sols.empty())
     {
-      int num_sol = redundant_sols.size() / dof;
-      for (int s = 0; s < num_sol; ++s)
+      unsigned int num_sol = redundant_sols.size() / dof;
+      for (unsigned int s = 0; s < num_sol; ++s)
       {
         FloatType* redundant_sol = redundant_sols.data() + dof * s;
         solution_set.insert(end(solution_set), redundant_sol, redundant_sol + dof);  // If good then add to solution
