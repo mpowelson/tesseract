@@ -39,14 +39,18 @@ add_message_files(
     Material.msg
     Mesh.msg
     ObjectColor.msg
-    TesseractState.msg
-    Trajectory.msg
-    VisualGeometry.msg
-    TransformMap.msg
+    ProcessDefinition.msg
     ProcessPlan.msg
     ProcessPlanPath.msg
     ProcessPlanSegment.msg
     ProcessPlanTransitionPair.msg
+    ProcessSegmentDefinition.msg
+    ProcessTransitionDefinition.msg
+    TesseractState.msg
+    Trajectory.msg
+    VisualGeometry.msg
+    TransformMap.msg
+    Waypoint.msg
 )
 
 add_service_files(
@@ -56,6 +60,7 @@ add_service_files(
     GetEnvironmentChanges.srv
     GetEnvironmentInformation.srv
     ModifyEnvironment.srv
+    PlanProcessPlan.srv
     SaveSceneGraph.srv
 )
 
