@@ -17,6 +17,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/ProcessPlanPath.h>
 #include <tesseract_msgs/ProcessPlanSegment.h>
 #include <tesseract_msgs/ProcessPlanTransitionPair.h>
+#include <tesseract_msgs/Waypoint.h>
+#include <tesseract_msgs/ProcessDefinition.h>
+#include <tesseract_msgs/ProcessSegmentDefinition.h>
+#include <tesseract_msgs/ProcessTransitionDefinition.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/waypoint.h>
@@ -57,6 +61,56 @@ inline Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const
   }
 
   return position;
+}
+
+/**
+ * @brief Converts tesseract_msgs Waypoint to tesseract_motion_planners Waypoint
+ * @param waypoint_msg Input waypoint message
+ * @return output Waypoint Ptr
+ */
+inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const tesseract_msgs::Waypoint& waypoint_msg)
+{
+  switch (waypoint_msg.waypoint_type)
+  {
+    case waypoint_msg.JOINT_WAYPOINT:
+    {
+      auto waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(waypoint_msg.joint_positions,
+                                                                                 waypoint_msg.joint_names);
+      waypoint->setCoefficients(toEigen(waypoint_msg.coeffs));
+      waypoint->setIsCritical(waypoint_msg.is_critical);
+      return waypoint;
+    }
+    case waypoint_msg.JOINT_TOLERANCED_WAYPOINT:
+    {
+      auto waypoint = std::make_shared<tesseract_motion_planners::JointTolerancedWaypoint>(waypoint_msg.joint_positions,
+                                                                                           waypoint_msg.joint_names);
+      waypoint->setCoefficients(toEigen(waypoint_msg.coeffs));
+      waypoint->setIsCritical(waypoint_msg.is_critical);
+
+      waypoint->setUpperTolerance(toEigen(waypoint_msg.upper_tolerance));
+      waypoint->setLowerTolerance(toEigen(waypoint_msg.lower_tolerance));
+      return waypoint;
+    }
+    case waypoint_msg.CARTESIAN_WAYPOINT:
+    {
+      Eigen::Isometry3d pose_eigen;
+      tf::poseMsgToEigen(waypoint_msg.cartesian_position, pose_eigen);
+      auto waypoint =
+          std::make_shared<tesseract_motion_planners::CartesianWaypoint>(pose_eigen, waypoint_msg.parent_link);
+      waypoint->setCoefficients(toEigen(waypoint_msg.coeffs));
+      waypoint->setIsCritical(waypoint_msg.is_critical);
+      return waypoint;
+    }
+    default:
+    {
+      ROS_WARN_STREAM("Invalid waypoint message type. Assuming JointWaypoint");
+      auto waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(waypoint_msg.joint_positions,
+                                                                                 waypoint_msg.joint_names);
+      waypoint->setCoefficients(toEigen(waypoint_msg.coeffs));
+      waypoint->setIsCritical(waypoint_msg.is_critical);
+      return waypoint;
+    }
+  }
 }
 
 /**
@@ -250,6 +304,87 @@ inline bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory
   return true;
 }
 
+/**
+ * @brief Converts process segment definition from a ROS message
+ * @param process_segment_definition Results
+ * @param process_segment_definition_msg Msg to be converted
+ * @return
+ */
+inline bool fromMsg(tesseract_process_planners::ProcessSegmentDefinition& process_segment_definition,
+                    const tesseract_msgs::ProcessSegmentDefinition& process_segment_definition_msg)
+{
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> approach;
+  for (const tesseract_msgs::Waypoint& wp : process_segment_definition_msg.approach)
+    approach.push_back(toWaypoint(wp));
+
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> process;
+  for (const tesseract_msgs::Waypoint& wp : process_segment_definition_msg.process)
+    process.push_back(toWaypoint(wp));
+
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> departure;
+  for (const tesseract_msgs::Waypoint& wp : process_segment_definition_msg.departure)
+    departure.push_back(toWaypoint(wp));
+
+  process_segment_definition.approach = approach;
+  process_segment_definition.process = process;
+  process_segment_definition.departure = departure;
+  return true;
+}
+
+/**
+ * @brief converts process transition definition from a ROS message
+ * @param process_transition_definition Results
+ * @param process_transition_definition_msg Msg to be converted
+ * @return
+ */
+inline bool fromMsg(tesseract_process_planners::ProcessTransitionDefinition& process_transition_definition,
+                    const tesseract_msgs::ProcessTransitionDefinition& process_transition_definition_msg)
+{
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> transition_from_start;
+  for (const tesseract_msgs::Waypoint& wp : process_transition_definition_msg.transition_from_start)
+    transition_from_start.push_back(toWaypoint(wp));
+
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> transition_from_end;
+  for (const tesseract_msgs::Waypoint& wp : process_transition_definition_msg.transition_from_end)
+    transition_from_end.push_back(toWaypoint(wp));
+
+  process_transition_definition.transition_from_start = transition_from_start;
+  process_transition_definition.transition_from_end = transition_from_end;
+  return true;
+}
+
+/**
+ * @brief Convertes a process definition from a ROS message
+ * @param process_definition Results
+ * @param process_definition_msg Msg to be converted
+ * @return
+ */
+inline bool fromMsg(tesseract_process_planners::ProcessDefinition& process_definition,
+                    const tesseract_msgs::ProcessDefinition& process_definition_msg)
+{
+  process_definition.start = toWaypoint(process_definition_msg.start);
+
+  std::vector<tesseract_process_planners::ProcessSegmentDefinition> segments;
+  for (const tesseract_msgs::ProcessSegmentDefinition& psd_msg : process_definition_msg.segments)
+  {
+    tesseract_process_planners::ProcessSegmentDefinition psd;
+    fromMsg(psd, psd_msg);
+    segments.push_back(psd);
+  }
+
+  std::vector<tesseract_process_planners::ProcessTransitionDefinition> transitions;
+  for (const tesseract_msgs::ProcessTransitionDefinition& ptd_msg : process_definition_msg.transitions)
+  {
+    tesseract_process_planners::ProcessTransitionDefinition ptd;
+    fromMsg(ptd, ptd_msg);
+    transitions.push_back(ptd);
+  }
+
+  process_definition.segments = segments;
+  process_definition.transitions = transitions;
+
+  return true;
+}
 /**
  * @brief Convert a joint trajector to csv formate and write to file
  * @param joint_trajectory Joint trajectory to be writen to file
