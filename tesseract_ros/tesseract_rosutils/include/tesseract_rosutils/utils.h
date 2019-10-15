@@ -52,6 +52,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/JointSafety.h>
 #include <tesseract_msgs/ProcessPlan.h>
 #include <tesseract_msgs/AllowedCollisionEntry.h>
+#include <tesseract_msgs/Waypoint.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -1496,6 +1497,67 @@ inline bool toMsg(sensor_msgs::JointState& joint_state, const tesseract_motion_p
       return false;
     }
   }
+}
+
+/**
+ * @brief Converts from Waypoint to Waypoint msg
+ * @param waypoint_msg results message
+ * @param waypoint input waypoint
+ * @return True if successful
+ */
+inline bool toMsg(tesseract_msgs::Waypoint& waypoint_msg, const tesseract_motion_planners::Waypoint& waypoint)
+{
+  // Set elements of base class
+  std::vector<double> coeffs(waypoint.getCoefficients().data(),
+                             waypoint.getCoefficients().data() + waypoint.getCoefficients().size());
+  waypoint_msg.coeffs = coeffs;
+  waypoint_msg.is_critical = waypoint.isCritical();
+
+  // Set elements dependent on waypoint type
+  if (waypoint.getType() == tesseract_motion_planners::WaypointType::JOINT_WAYPOINT)
+  {
+    const tesseract_motion_planners::JointWaypoint& joint_wp =
+        static_cast<const tesseract_motion_planners::JointWaypoint&>(waypoint);
+
+    waypoint_msg.waypoint_type = waypoint_msg.JOINT_WAYPOINT;
+    waypoint_msg.joint_names = joint_wp.getNames();
+    std::vector<double> pos(joint_wp.getPositions().data(),
+                            joint_wp.getPositions().data() + joint_wp.getPositions().size());
+    waypoint_msg.joint_positions = pos;
+  }
+  else if (waypoint.getType() == tesseract_motion_planners::WaypointType::JOINT_TOLERANCED_WAYPOINT)
+  {
+    const tesseract_motion_planners::JointTolerancedWaypoint& joint_tol_wp =
+        static_cast<const tesseract_motion_planners::JointTolerancedWaypoint&>(waypoint);
+
+    waypoint_msg.waypoint_type = waypoint_msg.JOINT_TOLERANCED_WAYPOINT;
+    waypoint_msg.joint_names = joint_tol_wp.getNames();
+    std::vector<double> pos(joint_tol_wp.getPositions().data(),
+                            joint_tol_wp.getPositions().data() + joint_tol_wp.getPositions().size());
+    waypoint_msg.joint_positions = pos;
+    std::vector<double> upper_tol(joint_tol_wp.getUpperTolerance().data(),
+                                  joint_tol_wp.getUpperTolerance().data() + joint_tol_wp.getUpperTolerance().size());
+    waypoint_msg.upper_tolerance = upper_tol;
+    std::vector<double> lower_tol(joint_tol_wp.getLowerTolerance().data(),
+                                  joint_tol_wp.getLowerTolerance().data() + joint_tol_wp.getLowerTolerance().size());
+    waypoint_msg.lower_tolerance = lower_tol;
+  }
+  else if (waypoint.getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
+  {
+    const tesseract_motion_planners::CartesianWaypoint& cart_wp =
+        static_cast<const tesseract_motion_planners::CartesianWaypoint&>(waypoint);
+
+    waypoint_msg.waypoint_type = waypoint_msg.CARTESIAN_WAYPOINT;
+    waypoint_msg.parent_link = cart_wp.getParentLinkName();
+    tf::poseEigenToMsg(cart_wp.getTransform(), waypoint_msg.cartesian_position);
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logError("Unable to convert waypoint type '%d' to joint state message.", waypoint.getType());
+    assert(false);
+    return false;
+  }
+  return true;
 }
 
 /**
