@@ -43,6 +43,16 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS})
 
+  add_executable(${PROJECT_NAME}_rotation_example_node src/rotation_example.cpp)
+  target_link_libraries(${PROJECT_NAME}_rotation_example_node ${PROJECT_NAME}_basic_cartesian_example ${catkin_LIBRARIES})
+  tesseract_target_compile_options(${PROJECT_NAME}_rotation_example_node PRIVATE)
+  target_include_directories(${PROJECT_NAME}_rotation_example_node PRIVATE
+      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+      "$<INSTALL_INTERFACE:include>")
+  target_include_directories(${PROJECT_NAME}_rotation_example_node SYSTEM PRIVATE
+      ${catkin_INCLUDE_DIRS})
+
+
 add_executable(${PROJECT_NAME}_basic_cartesian_example_node src/basic_cartesian_example_node.cpp)
 target_link_libraries(${PROJECT_NAME}_basic_cartesian_example_node ${PROJECT_NAME}_basic_cartesian_example ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE)
@@ -152,6 +162,7 @@ install(DIRECTORY include/${PROJECT_NAME}
 # Mark executables and/or libraries for installation
 install(
   TARGETS
+    ${PROJECT_NAME}_rotation_example_node
     ${PROJECT_NAME}_basic_cartesian_example
     ${PROJECT_NAME}_basic_cartesian_example_node
     ${PROJECT_NAME}_glass_up_right_example
