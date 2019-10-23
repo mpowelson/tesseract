@@ -17,9 +17,90 @@ const std::string ROBOT_SEMANTIC_PARAM =
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <trajopt/utils.hpp>
+#include <tesseract_motion_planners/core/utils.h>
 
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
+Eigen::Isometry3d calcRotation(double rx, double ry, double rz)
+{
+  Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+  pose.rotate(Eigen::AngleAxisd(rz * M_PI / 180., Eigen::Vector3d(0, 0, 1)));
+  pose.rotate(Eigen::AngleAxisd(ry * M_PI / 180., Eigen::Vector3d(0, 1, 0)));
+  pose.rotate(Eigen::AngleAxisd(rx * M_PI / 180., Eigen::Vector3d(1, 0, 0)));
+  return pose;
+}
+
+//std::vector<Eigen::Isometry3d> getSlerp(Eigen::Is)
+
+std::vector<tesseract_common::VectorIsometry3d> getSlerpEdges(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max)
+{
+  std::vector<tesseract_common::VectorIsometry3d> edges;
+
+  // X edges
+  {
+    auto rot1 = calcRotation(x_min, y_min, z_min);
+    auto rot2 = calcRotation(x_max, y_min, z_min);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_min, y_min, z_max);
+    auto rot2 = calcRotation(x_max, y_min, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_min, y_max, z_min);
+    auto rot2 = calcRotation(x_max, y_max, z_min);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_min, y_max, z_max);
+    auto rot2 = calcRotation(x_max, y_max, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  // Y Edges
+  {
+    auto rot1 = calcRotation(x_min, y_min, z_min);
+    auto rot2 = calcRotation(x_min, y_max, z_min);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_min, y_min, z_max);
+    auto rot2 = calcRotation(x_min, y_max, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_max, y_min, z_min);
+    auto rot2 = calcRotation(x_max, y_max, z_min);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_max, y_min, z_max);
+    auto rot2 = calcRotation(x_max, y_max, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  // Z Edges
+  {
+    auto rot1 = calcRotation(x_min, y_min, z_min);
+    auto rot2 = calcRotation(x_min, y_min, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_min, y_max, z_min);
+    auto rot2 = calcRotation(x_min, y_max, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_max, y_min, z_min);
+    auto rot2 = calcRotation(x_max, y_min, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  {
+    auto rot1 = calcRotation(x_max, y_max, z_min);
+    auto rot2 = calcRotation(x_max, y_max, z_max);
+    edges.push_back(tesseract_motion_planners::interpolate(rot1, rot2, 20));
+  }
+  return edges;
+}
 
 int main(int argc, char** argv)
 {
@@ -37,21 +118,18 @@ int main(int argc, char** argv)
   auto tesseract = std::make_shared<tesseract::Tesseract>();
   if (!tesseract->init(urdf_xml_string, srdf_xml_string, locator))
     return -1;
-  ros::Publisher pub = nh.advertise<PointCloud> ("points2", 1);
+  ros::Publisher pub1 = nh.advertise<PointCloud> ("points1", 1);
+  ros::Publisher pub2 = nh.advertise<PointCloud> ("points2", 1);
 
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract->getEnvironment());
   plotter->waitForInput();
-
-//  ros::Publisher pub = nh.advertise<PointCloud> ("points2", 1);
-
 
 
 
   PointCloud::Ptr msg (new PointCloud);
   msg->header.frame_id = "world";
   msg->width = 1;
-//  msg->points.push_back (pcl::PointXYZ(1.0, 2.0, 3.0));
 
 
   // Here is the actual example
@@ -59,22 +137,23 @@ int main(int argc, char** argv)
   plotter->plotAxis(target, 1.0);
 
   // Loop over some rotations and check that the error is negative if they are less than the tolerances
-  double rx_res = 9.99;
-  double ry_res = 9.99;
-  double rz_res = 9.99;
-  for (double rx = -180; rx < 180; rx += rx_res)
+  double rx_res = 4.99;
+  double ry_res = 4.99;
+  double rz_res = 4.99;
+  for (double rx = -45; rx < 45; rx += rx_res)
   {
-    for (double ry = -180; ry < 180; ry += ry_res)
+    for (double ry = -45; ry < 45; ry += ry_res)
     {
-      for (double rz = -180; rz < 180; rz += rz_res)
+//      for (double rz = 0; rz < 45; rz += rz_res)
       {
-//        double rz = 0.00001;
+        double rz = 0.00001;
         Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
         pose.rotate(Eigen::AngleAxisd(rz * M_PI / 180., Eigen::Vector3d(0, 0, 1)));
         pose.rotate(Eigen::AngleAxisd(ry * M_PI / 180., Eigen::Vector3d(0, 1, 0)));
         pose.rotate(Eigen::AngleAxisd(rx * M_PI / 180., Eigen::Vector3d(1, 0, 0)));
 
         Eigen::Isometry3d pose_delta = pose;
+        // Convert to angle axis
         Eigen::Vector3d pnt = trajopt::calcRotationalError(pose_delta.linear().matrix());
         msg->points.push_back (pcl::PointXYZ(pnt(0),pnt(1),pnt(2)));
 
@@ -104,8 +183,35 @@ int main(int argc, char** argv)
     }
   }
   msg->height = msg->points.size();
+  ROS_INFO("Cloud2 Points: %d", msg->points.size());
   pcl_conversions::toPCL(ros::Time::now(), msg->header.stamp);
-  pub.publish (msg);
+  pub2.publish (msg);
+
+
+  // Plot slerp edges to compare
+  PointCloud::Ptr edge_msg (new PointCloud);
+  edge_msg->header.frame_id = "world";
+  edge_msg->width = 1;
+
+  auto edges = getSlerpEdges(-45, 45, -45, 45, 0.001, 0.001);
+  for (auto& edge : edges)
+  {
+    for(auto& rot : edge)
+    {
+      Eigen::Vector3d pnt = trajopt::calcRotationalError(rot.linear().matrix());
+      edge_msg->points.push_back (pcl::PointXYZ(pnt(0),pnt(1),pnt(2)));
+    }
+    edge_msg->height = edge_msg->points.size();
+    pcl_conversions::toPCL(ros::Time::now(), edge_msg->header.stamp);
+    pub1.publish (edge_msg);
+  }
+  edge_msg->height = edge_msg->points.size();
+  ROS_INFO("Cloud1 Points: %d", edge_msg->points.size());
+  pcl_conversions::toPCL(ros::Time::now(), edge_msg->header.stamp);
+  pub1.publish (edge_msg);
+
+
+
   ROS_WARN("Done");
   ros::spin();
 }
