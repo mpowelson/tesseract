@@ -30,6 +30,15 @@ Eigen::Isometry3d calcRotation(double rx, double ry, double rz)
   return pose;
 }
 
+double calcError(Eigen::Isometry3d& rot1, Eigen::Isometry3d& rot2)
+{
+  Eigen::Quaterniond q1(rot1.rotation().matrix());
+  Eigen::Quaterniond q2(rot2.rotation().matrix());
+  double inside = q1.w() * q2.w() + q1.x() * q2.x() + q1.y() * q2.y() + q1.z() * q2.z();
+  double error = 1 - std::abs(inside);
+  return error;
+}
+
 //std::vector<Eigen::Isometry3d> getSlerp(Eigen::Is)
 
 std::vector<tesseract_common::VectorIsometry3d> getSlerpEdges(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max)
@@ -120,10 +129,36 @@ int main(int argc, char** argv)
     return -1;
   ros::Publisher pub1 = nh.advertise<PointCloud> ("points1", 1);
   ros::Publisher pub2 = nh.advertise<PointCloud> ("points2", 1);
+  ros::Publisher pub3 = nh.advertise<PointCloud> ("points3", 1);
+
 
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract->getEnvironment());
   plotter->waitForInput();
+
+
+
+
+  PointCloud::Ptr msg3 (new PointCloud);
+  msg3->header.frame_id = "world";
+  msg3->width = 1;
+
+    // Build some rotation to compare the error to
+  Eigen::Isometry3d pose_target;
+  Eigen::Isometry3d pose_closest = Eigen::Isometry3d::Identity();
+  double error = 0;
+  {
+    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
+    pose.rotate(Eigen::AngleAxisd(20 * M_PI / 180., Eigen::Vector3d(0, 0, 1)));
+    pose.rotate(Eigen::AngleAxisd(450 * M_PI / 180., Eigen::Vector3d(0, 1, 0)));
+    pose.rotate(Eigen::AngleAxisd(1240 * M_PI / 180., Eigen::Vector3d(1, 0, 0)));
+
+    Eigen::Isometry3d pose_delta = pose;
+    pose_target = pose;
+    // Convert to angle axis
+    Eigen::Vector3d pnt = trajopt::calcRotationalError(pose_delta.linear().matrix());
+    msg3->points.push_back (pcl::PointXYZ(pnt(0),pnt(1),pnt(2)));
+  }
 
 
 
@@ -140,13 +175,14 @@ int main(int argc, char** argv)
   double rx_res = 4.99;
   double ry_res = 4.99;
   double rz_res = 4.99;
-  for (double rx = -45; rx < 45; rx += rx_res)
+
+  for (double rx = -25; rx < 25; rx += rx_res)
   {
     for (double ry = -45; ry < 45; ry += ry_res)
     {
-//      for (double rz = 0; rz < 45; rz += rz_res)
+      for (double rz = 0; rz < 45; rz += rz_res)
       {
-        double rz = 0.00001;
+//        double rz = 0.00001;
         Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
         pose.rotate(Eigen::AngleAxisd(rz * M_PI / 180., Eigen::Vector3d(0, 0, 1)));
         pose.rotate(Eigen::AngleAxisd(ry * M_PI / 180., Eigen::Vector3d(0, 1, 0)));
@@ -154,10 +190,16 @@ int main(int argc, char** argv)
 
         Eigen::Isometry3d pose_delta = pose;
         // Convert to angle axis
-        Eigen::Vector3d pnt = trajopt::calcRotationalError(pose_delta.linear().matrix());
-        msg->points.push_back (pcl::PointXYZ(pnt(0),pnt(1),pnt(2)));
+//        Eigen::Vector3d pnt = trajopt::calcRotationalError(pose_delta.linear().matrix()) * 2 * M_PI;
+//        msg->points.push_back (pcl::PointXYZ(pnt(0),pnt(1),pnt(2)));
 
 
+        double error_new = calcError(pose_delta, pose_target);
+        if (error < error_new)
+        {
+          error = error_new;
+          pose_closest = pose_delta;
+        }
 
 
         // eulerAngles(2,1,0) returns the rotation in ZYX Euler angles. Since these can be converted to fixed axis
@@ -173,8 +215,10 @@ int main(int argc, char** argv)
         Eigen::Vector3d fixed_delta_degrees2(rx_out, ry_out, rz_out);
 
         Eigen::Vector3d out = fixed_delta_degrees;
-        if(out(0) > -10 && out(0) <10 && out(1) > -45 && out(1) < 45 && out(2) > 0 && out(2) < 5)
-          plotter->plotAxis(pose, 0.5);
+//        if(out(0) > -10 && out(0) <10 && out(1) > -45 && out(1) < 45 && out(2) > 0 && out(2) < 5)
+//          plotter->plotAxis(pose, 0.5);
+
+
 
 
 //        if ( std::abs(out(0)-rx) > 1e-5 || std::abs(out(1)-ry) > 1e-5 || std::abs(out(2)-rz) > 1e-5)
@@ -182,10 +226,13 @@ int main(int argc, char** argv)
       }
     }
   }
+  plotter->plotAxis(pose_closest, 0.75);
+  plotter->plotAxis(pose_target, 0.5);
+
   msg->height = msg->points.size();
-  ROS_INFO("Cloud2 Points: %d", msg->points.size());
+  ROS_INFO("Cloud1 Points: %d", msg->points.size());
   pcl_conversions::toPCL(ros::Time::now(), msg->header.stamp);
-  pub2.publish (msg);
+  pub1.publish (msg);
 
 
   // Plot slerp edges to compare
@@ -193,7 +240,7 @@ int main(int argc, char** argv)
   edge_msg->header.frame_id = "world";
   edge_msg->width = 1;
 
-  auto edges = getSlerpEdges(-45, 45, -45, 45, 0.001, 0.001);
+  auto edges = getSlerpEdges(-25, 25, -45, 45, 0.0, 45.0);
   for (auto& edge : edges)
   {
     for(auto& rot : edge)
@@ -203,14 +250,21 @@ int main(int argc, char** argv)
     }
     edge_msg->height = edge_msg->points.size();
     pcl_conversions::toPCL(ros::Time::now(), edge_msg->header.stamp);
-    pub1.publish (edge_msg);
+    pub2.publish (edge_msg);
   }
   edge_msg->height = edge_msg->points.size();
-  ROS_INFO("Cloud1 Points: %d", edge_msg->points.size());
+  ROS_INFO("Cloud2 Points: %d", edge_msg->points.size());
   pcl_conversions::toPCL(ros::Time::now(), edge_msg->header.stamp);
-  pub1.publish (edge_msg);
+  pub2.publish (edge_msg);
 
 
+  // Print closest edge point
+  Eigen::Vector3d pnt = trajopt::calcRotationalError(pose_closest.linear().matrix());
+  msg3->points.push_back (pcl::PointXYZ(pnt(0),pnt(1),pnt(2)));
+  msg3->height = msg3->points.size();
+  ROS_INFO("Cloud3 Points: %d", msg3->points.size());
+  pcl_conversions::toPCL(ros::Time::now(), msg3->header.stamp);
+  pub3.publish (msg3);
 
   ROS_WARN("Done");
   ros::spin();
