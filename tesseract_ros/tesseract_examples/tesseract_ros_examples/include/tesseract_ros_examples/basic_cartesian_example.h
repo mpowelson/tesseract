@@ -59,11 +59,6 @@ private:
   ros::NodeHandle nh_;
   int steps_;
   std::string method_;
-
-  trajopt::TrajOptProb::Ptr jsonMethod();
-  trajopt::TrajOptProb::Ptr cppMethod();
-
-  bool addPointCloud();
 };
 
 }  // namespace tesseract_ros_examples

@@ -21,20 +21,6 @@ add_library(${PROJECT_NAME}_basic_cartesian_example src/basic_cartesian_example.
 target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_basic_cartesian_example PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_basic_cartesian_example)
-foreach(DEF ${PCL_DEFINITIONS})
-  string(STRIP ${DEF} DEF)
-  if (NOT "${DEF}" STREQUAL "")
-    string(SUBSTRING "${DEF}" 0 2 DEF_PREFIX)
-    if ("${DEF_PREFIX}" STREQUAL "-m")
-      string(REPLACE " " ";" DEF ${DEF})
-      foreach(OPTION_DEF ${DEF})
-        target_compile_options(${PROJECT_NAME}_basic_cartesian_example PUBLIC ${OPTION_DEF})
-      endforeach()
-    else()
-      target_compile_definitions(${PROJECT_NAME}_basic_cartesian_example PUBLIC ${DEF})
-    endif()
-  endif()
-endforeach()
 target_include_directories(${PROJECT_NAME}_basic_cartesian_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -52,106 +38,6 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE
 target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}_glass_up_right_example src/glass_up_right_example.cpp)
-target_link_libraries(${PROJECT_NAME}_glass_up_right_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_glass_up_right_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_glass_up_right_example)
-target_include_directories(${PROJECT_NAME}_glass_up_right_example PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_glass_up_right_example SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_glass_up_right_example_node src/glass_up_right_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_glass_up_right_example_node ${PROJECT_NAME}_glass_up_right_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_glass_up_right_example_node )
-tesseract_clang_tidy(${PROJECT_NAME}_glass_up_right_example_node)
-target_include_directories(${PROJECT_NAME}_glass_up_right_example_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_glass_up_right_example_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_puzzle_piece_example src/puzzle_piece_example.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_puzzle_piece_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_puzzle_piece_example)
-target_include_directories(${PROJECT_NAME}_puzzle_piece_example PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_puzzle_piece_example SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_puzzle_piece_example_node src/puzzle_piece_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_example_node ${PROJECT_NAME}_puzzle_piece_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_puzzle_piece_example_node PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_puzzle_piece_example_node)
-target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_car_seat_example src/car_seat_example.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_car_seat_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_car_seat_example)
-target_include_directories(${PROJECT_NAME}_car_seat_example PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_car_seat_example SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_car_seat_example_node src/car_seat_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_example_node ${PROJECT_NAME}_car_seat_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_car_seat_example_node PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_car_seat_example_node)
-target_include_directories(${PROJECT_NAME}_car_seat_example_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_car_seat_example_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example src/puzzle_piece_auxillary_axes_example.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example)
-target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node src/puzzle_piece_auxillary_axes_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node)
-target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_pick_and_place_example src/pick_and_place_example.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example)
-target_include_directories(${PROJECT_NAME}_pick_and_place_example PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_pick_and_place_example SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_pick_and_place_example_node src/pick_and_place_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_example_node ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example_node PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example_node)
-target_include_directories(${PROJECT_NAME}_pick_and_place_example_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_pick_and_place_example_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
-
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
@@ -164,16 +50,6 @@ install(
   TARGETS
     ${PROJECT_NAME}_basic_cartesian_example
     ${PROJECT_NAME}_basic_cartesian_example_node
-    ${PROJECT_NAME}_glass_up_right_example
-    ${PROJECT_NAME}_glass_up_right_example_node
-    ${PROJECT_NAME}_puzzle_piece_example
-    ${PROJECT_NAME}_puzzle_piece_example_node
-    ${PROJECT_NAME}_car_seat_example
-    ${PROJECT_NAME}_car_seat_example_node
-    ${PROJECT_NAME}_pick_and_place_example
-    ${PROJECT_NAME}_pick_and_place_example_node
-    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example
-    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
