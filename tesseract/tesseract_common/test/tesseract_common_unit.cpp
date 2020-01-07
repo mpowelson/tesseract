@@ -4,6 +4,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
+#include <tesseract_common/interpolators.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {

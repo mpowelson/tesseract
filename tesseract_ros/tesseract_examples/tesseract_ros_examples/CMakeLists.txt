@@ -9,11 +9,17 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
 )
 
+add_compile_options(
+  -std=c++14)
+
 find_package(trajopt REQUIRED)
 find_package(tesseract REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
+find_package(Qt5 REQUIRED COMPONENTS Charts)
+#find_package(Qt5Charts REQUIRED)
+include_directories(${Qt5_Charts_INCLUDE_DIRS})
 
 catkin_package()
 
@@ -29,7 +35,7 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example SYSTEM PUBLIC
     ${PCL_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_basic_cartesian_example_node src/basic_cartesian_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_basic_cartesian_example_node ${PROJECT_NAME}_basic_cartesian_example ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_basic_cartesian_example_node ${PROJECT_NAME}_basic_cartesian_example ${catkin_LIBRARIES} Qt5::Charts)
 tesseract_target_compile_options(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_basic_cartesian_example_node)
 target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE
@@ -37,6 +43,7 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE -std=c++14 -mno-avx)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
