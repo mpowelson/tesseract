@@ -50,6 +50,55 @@ TEST(TesseractCommonUnit, toNumeric)  // NOLINT
   }
 }
 
+TEST(TesseractCommonUnit, splineFunctionNoDerivatives)  // NOLINT
+{
+  Eigen::VectorXd xvals(10);
+  Eigen::VectorXd yvals(xvals.rows());
+
+  xvals << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;
+  yvals = xvals.array().square();
+
+  // Fit the spline
+  tesseract_common::SplineFunction spline(xvals, yvals);
+
+  // Check that input knots are hit exactly
+  for (long ind = 0; ind < xvals.size(); ind++)
+    EXPECT_NEAR(spline(xvals[ind]), yvals[ind], 1e-8);
+
+  Eigen::VectorXd xvals_interp(8);
+  xvals_interp << 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5;
+  // Check that the intermediate points are within 1% for a quadratic (they should be really close)
+  for (long ind = 0; ind < xvals_interp.size(); ind++)
+  {
+    double gt = xvals_interp[ind] * xvals_interp[ind];
+    EXPECT_NEAR(spline(xvals_interp[ind]), gt, gt * 0.01);
+  }
+}
+
+TEST(TesseractCommonUnit, splineFunctionWithDerivatives)  // NOLINT
+{
+  Eigen::VectorXd xvals(10);
+  Eigen::VectorXd yvals(xvals.rows());
+
+  xvals << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;
+  yvals = xvals.array().cube();
+
+  Eigen::VectorXd derivatives(2);
+  derivatives << 0., 0.;
+  Eigen::VectorXi indices(2);
+  indices << 0, static_cast<int>(xvals.size() - 1);
+
+  // Fit the spline
+  tesseract_common::SplineFunction spline(xvals, yvals, derivatives, indices);
+
+  // Check that input knots are hit exactly
+  for (long ind = 0; ind < xvals.size(); ind++)
+    EXPECT_NEAR(spline(xvals[ind]), yvals[ind], 1e-8);
+
+  // Note: Interpolating using derivatives is not tested here because it requires patches to Eigen. See note in class
+  // documentation
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
