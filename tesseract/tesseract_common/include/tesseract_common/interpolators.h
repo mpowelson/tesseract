@@ -63,14 +63,18 @@ public:
     , x_max_(x_vec.maxCoeff())
     ,
     // Scale x values to [0:1] and curve fit with a 3rd order B-Spline.
-    spline_(
-        Eigen::SplineFitting<Eigen::Spline<double, 1>>::InterpolateWithDerivatives(y_vec.transpose(),
-                                                                                   derivatives.transpose(),
-                                                                                   indices,
-                                                                                   std::min<unsigned>(static_cast<unsigned>(x_vec.rows()) - 1, 3),
-                                                                                   scaledValues(x_vec)))
+    spline_(Eigen::SplineFitting<Eigen::Spline<double, 1>>::InterpolateWithDerivatives(
+        y_vec.transpose(),
+        derivatives.transpose(),
+        indices,
+        std::min<unsigned>(static_cast<unsigned>(x_vec.rows()) - 1, 3),
+        scaledValues(x_vec)))
   {
     assert(derivatives.size() == indices.size());
+    assert(!(x_vec.array().isNaN().any()));
+    assert(!(x_vec.array().isInf().any()));
+    assert(!(y_vec.array().isNaN().any()));
+    assert(!(y_vec.array().isInf().any()));
   }
 
   /**
@@ -87,6 +91,10 @@ public:
                                                                         std::min<long>(x_vec.rows() - 1, 3),
                                                                         scaledValues(x_vec)))
   {
+    assert(!(x_vec.array().isNaN().any()));
+    assert(!(x_vec.array().isInf().any()));
+    assert(!(y_vec.array().isNaN().any()));
+    assert(!(y_vec.array().isInf().any()));
   }
 
   /** @brief Returns the y value at point x in the spline */
@@ -130,9 +138,10 @@ private:
  * result_length size.
  *
  * Note: While the spline will hit these points, the resulting TrajArray is not guaranteed to include the original
- * points unless result_length is a multiple of input_traj.rows()
+ * points unless result_length is of size n * (input_traj.rows() - 1) + 1
  * @param input_traj Input TrajArray. Each column will be interpolated with a cubic spline.
- * @param result_length Number of rows in the resulting TrajArray. For best results this should be a multiple of input_traj.rows()
+ * @param result_length Number of rows in the resulting TrajArray. For best results this should be size n *
+ * (input_traj.rows() - 1) + 1
  * @return Resulting TrajArray of size results_length x input_traj.cols()
  */
 inline TrajArray interpolateCubicSpline(const Eigen::Ref<TrajArray>& input_traj, const int& result_length)
@@ -141,7 +150,8 @@ inline TrajArray interpolateCubicSpline(const Eigen::Ref<TrajArray>& input_traj,
   for (long ind = 0; ind < input_traj.cols(); ind++)
   {
     // Fit the spline to the input data
-    Eigen::VectorXd t_in = Eigen::VectorXd::LinSpaced(input_traj.rows(), 0.0, static_cast<double>(input_traj.rows() - 1));
+    Eigen::VectorXd t_in =
+        Eigen::VectorXd::LinSpaced(input_traj.rows(), 0.0, static_cast<double>(input_traj.rows() - 1));
     Eigen::VectorXd y_in = input_traj.col(ind);
     SplineFunction spline(t_in, y_in);
 
