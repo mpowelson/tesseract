@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
 )
 
+find_package(tesseract_serialization REQUIRED)
 find_package(trajopt REQUIRED)
 find_package(tesseract REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)

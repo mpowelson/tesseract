@@ -26,6 +26,7 @@
   <depend>octomap_ros</depend>
   <depend>pcl_conversions</depend>
   <depend>libjsoncpp-dev</depend>
+  <depend>tesseract_serialization</depend>
 
   <exec_depend>tesseract_rviz</exec_depend>
   <exec_depend>xacro</exec_depend>
