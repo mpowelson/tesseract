@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_python)
+project(tesseract_python VERSION 0.1.0)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
@@ -113,6 +113,27 @@ if(SETUPTOOLS_DEB_LAYOUT)
   set(SETUPTOOLS_ARG_EXTRA "--install-layout=deb")
 endif()
 
+# TESt--------------
+add_library(${PROJECT_NAME}_srcs INTERFACE)
+target_link_libraries(${PROJECT_NAME}_srcs INTERFACE)
+target_include_directories(${PROJECT_NAME}_srcs INTERFACE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/swig>"
+   "$<INSTALL_INTERFACE:share/${PROJECT_NAME}>")
+
+ install(DIRECTORY swig
+   DESTINATION share/${PROJECT_NAME}
+   FILES_MATCHING PATTERN "*.i"
+  )
+
+
+# Mark executables and/or libraries for installation
+#install(TARGETS ${PROJECT_NAME}_srcs
+#    EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+#install(EXPORT ${PROJECT_NAME}-targets
+#    NAMESPACE tesseract:: DESTINATION lib/cmake/${PROJECT_NAME})
+
+  tesseract_configure_package(${PROJECT_NAME}_srcs)
+
 if (${PYTHON_VERSION_MAJOR} LESS 3)
     install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
     execute_process(COMMAND python setup.py install -f
@@ -122,6 +143,9 @@ else()
   execute_process(COMMAND python3 setup.py install -f
   --root=/ --prefix=${CMAKE_INSTALL_PREFIX} ${SETUPTOOLS_ARG_EXTRA} --single-version-externally-managed WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)")
 endif()
+
+
+
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()
