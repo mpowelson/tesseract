@@ -76,7 +76,7 @@ struct InterpolatorPlannerConfig
 
   /**
    * @brief The program instruction
-   * This must containt a minimum of two move instruction the first move instruction is the start state
+   * This must contain a minimum of two move instruction the first move instruction is the start state
    */
   tesseract_planning::CompositeInstruction instructions;
 

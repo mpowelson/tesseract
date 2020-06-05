@@ -36,7 +36,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/types.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_motion_planners/core/waypoint.h>
+#include <tesseract_command_language/cartesian_waypoint.h>
+#include <tesseract_command_language/joint_waypoint.h>
+#include <tesseract_command_language/core/waypoint.h>
 
 namespace tesseract_motion_planners
 {
@@ -87,9 +91,7 @@ inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& s
  * @param steps The number of step
  * @return A matrix where columns = steps + 1
  */
-inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start,
-                                   const Eigen::VectorXd& stop,
-                                   int steps)
+inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start, const Eigen::VectorXd& stop, int steps)
 {
   assert(start.size() == stop.size());
 
@@ -108,7 +110,10 @@ inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start,
  * @param steps The number of step
  * @return A vector of waypoints with a length = steps + 1
  */
-inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypoint& stop, int steps)
+ inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
+ interpolate(const tesseract_motion_planners::Waypoint& start,
+            const tesseract_motion_planners::Waypoint& stop,
+            int steps)
 {
   switch (start.getType())
   {
@@ -136,6 +141,52 @@ inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypo
       CONSOLE_BRIDGE_logError("Interpolator for Waypoint type %d is currently not support!", start.getType());
       return std::vector<Waypoint::Ptr>();
     }
+  }
+}
+
+/**
+ * @brief Converts a waypoint to a cartesian waypoint
+ * @param input Input waypoint. May be either a cartesian or joint waypoint
+ * @param kin Forward Kinematics used to convert joint waypoint to cartesian
+ * @return Cartesian waypoint
+ */
+inline tesseract_planning::CartesianWaypoint
+toCartesianWaypoint(const tesseract_planning::Waypoint& input, const tesseract_kinematics::ForwardKinematics::Ptr& kin)
+{
+  if (input.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT))
+  {
+    return *input.cast_const<tesseract_planning::CartesianWaypoint>();
+  }
+  else if (input.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
+  {
+    Eigen::Isometry3d solution;
+    kin->calcFwdKin(solution, *input.cast_const<tesseract_planning::JointWaypoint>());
+    return tesseract_planning::CartesianWaypoint(solution);
+  }
+
+  return tesseract_planning::CartesianWaypoint();
+}
+
+/**
+ * @brief Converts a waypoint to a joint waypoint
+ * @param input Input waypoint. May be either a cartesian or joint waypoint
+ * @param kin Inverse kinematics used to convert a cartesian waypoint to joint
+ * @param seed Seed position used for inverse kinematics
+ * @return Joint Waypoint
+ */
+inline tesseract_planning::JointWaypoint toJointWaypoint(const tesseract_planning::Waypoint& input,
+                                                         const tesseract_kinematics::InverseKinematics::Ptr& kin,
+                                                         const tesseract_planning::JointWaypoint& seed)
+{
+  if (input.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
+  {
+    return *input.cast_const<tesseract_planning::JointWaypoint>();
+  }
+  else if (input.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT))
+  {
+    Eigen::VectorXd solution;
+    kin->calcInvKin(solution, *input.cast_const<tesseract_planning::CartesianWaypoint>(), seed);
+    return tesseract_planning::JointWaypoint(solution.topRows(seed.size()));
   }
 }
 }  // namespace tesseract_motion_planners
