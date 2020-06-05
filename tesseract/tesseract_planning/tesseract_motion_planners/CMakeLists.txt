@@ -8,6 +8,7 @@ find_package(descartes_light REQUIRED)
 find_package(descartes_samplers REQUIRED)
 find_package(descartes_opw REQUIRED)
 find_package(tesseract REQUIRED)
+find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(Boost REQUIRED)
@@ -115,12 +116,26 @@ target_include_directories(${PROJECT_NAME}_descartes_trajopt_array PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 
+# Interpolator Planner
+add_library(${PROJECT_NAME}_interpolator SHARED
+  src/interpolator/interpolator_motion_planner.cpp
+  src/interpolator/interpolator_motion_planner_status_category.cpp
+  src/interpolator/config/interpolator_planner_config.cpp)
+target_link_libraries(${PROJECT_NAME}_interpolator PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_command_language)
+tesseract_target_compile_options(${PROJECT_NAME}_interpolator PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_interpolator)
+tesseract_code_coverage(${PROJECT_NAME}_interpolator ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_include_directories(${PROJECT_NAME}_interpolator PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+
 tesseract_configure_package(${PROJECT_NAME}_core
                             ${PROJECT_NAME}_trajopt
                             ${PROJECT_NAME}_ompl
                             ${PROJECT_NAME}_ompl_trajopt_freespace
                             ${PROJECT_NAME}_descartes
-                            ${PROJECT_NAME}_descartes_trajopt_array)
+                            ${PROJECT_NAME}_descartes_trajopt_array
+                            ${PROJECT_NAME}_interpolator)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
