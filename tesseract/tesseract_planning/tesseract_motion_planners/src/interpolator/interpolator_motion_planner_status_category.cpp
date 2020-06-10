@@ -33,7 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-InterpolatorMotionPlannerStatusCategory::InterpolatorMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
+InterpolatorMotionPlannerStatusCategory::InterpolatorMotionPlannerStatusCategory(std::string name)
+  : name_(std::move(name))
+{
+}
 
 const std::string& InterpolatorMotionPlannerStatusCategory::name() const noexcept { return name_; }
 

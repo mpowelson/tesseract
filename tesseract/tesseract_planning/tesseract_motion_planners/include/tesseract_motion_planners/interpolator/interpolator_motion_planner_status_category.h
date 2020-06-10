@@ -7,7 +7,7 @@
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)

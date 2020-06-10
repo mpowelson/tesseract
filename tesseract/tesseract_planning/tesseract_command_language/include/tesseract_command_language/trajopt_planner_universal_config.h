@@ -7,7 +7,6 @@
 
 namespace tesseract_planning
 {
-
 /**
  * @brief Default configuration to setup TrajOpt planner.
  *
@@ -80,6 +79,6 @@ protected:
   std::vector<std::size_t> plan_instruction_indices_;
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H
+#endif  // TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H

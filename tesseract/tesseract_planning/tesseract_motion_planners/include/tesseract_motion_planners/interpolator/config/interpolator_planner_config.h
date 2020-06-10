@@ -41,16 +41,7 @@ struct InterpolatorPlannerConfig
   using Ptr = std::shared_ptr<InterpolatorPlannerConfig>;
   using ConstPtr = std::shared_ptr<const InterpolatorPlannerConfig>;
 
-  //  explicit InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract, std::string manipulator);
-
-  //  explicit InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
-  //                             std::string manipulator,
-  //                             std::vector<InterpolatorPlannerConfigurator::ConstPtr> planners);
-
-  //  explicit InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
-  //                             std::string manipulator,
-  //                             std::vector<InterpolatorPlannerConfigurator::ConstPtr> planners,
-  //                             Interpolator::geometric::SimpleSetupPtr simple_setup);
+  explicit InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract);
 
   virtual ~InterpolatorPlannerConfig() = default;
   InterpolatorPlannerConfig(const InterpolatorPlannerConfig&) = default;
@@ -59,14 +50,7 @@ struct InterpolatorPlannerConfig
   InterpolatorPlannerConfig& operator=(InterpolatorPlannerConfig&&) noexcept = default;
 
   /**
-   * @brief Generates the Interpolator problem and saves the result internally
-   * @return True on success, false on failure
-   */
-  virtual bool generate();
-
-  /**
-   * @brief Convert the path stored in simple_setup to tesseract trajectory
-   * This is required because the motion planner is not aware of the state space type.
+   * @brief Convert the seed to a TrajArray. This may not be needed
    * @return Tesseract Trajectory
    */
   tesseract_common::TrajArray getTrajectory() const;
@@ -86,13 +70,12 @@ struct InterpolatorPlannerConfig
    */
   tesseract_planning::CompositeInstruction seed;
 
-  // TODO: This might be able to go away
-
-  /** @brief If true, collision checking will be enabled. Default: true*/
+  /** @brief If true, the results will be checked for collision and the planner will only succeed if it is collision
+   * free. Default: true*/
   bool collision_check = true;
-  /** @brief If true, use continuous collision checking */
-  bool collision_continuous = true;
-  /** @brief Max distance over which collisions are checked */
+  /** Used by the trajectory validator if collision_check = true. Default: 0.01*/
+  double longest_valid_segment_length_ = 0.01;
+  /** @brief Max distance over which collisions are checked. Default: 0.025 */
   double collision_safety_margin = 0.025;
 };
 

@@ -110,8 +110,8 @@ inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start, const Eigen::Ve
  * @param steps The number of step
  * @return A vector of waypoints with a length = steps + 1
  */
- inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
- interpolate(const tesseract_motion_planners::Waypoint& start,
+inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
+interpolate(const tesseract_motion_planners::Waypoint& start,
             const tesseract_motion_planners::Waypoint& stop,
             int steps)
 {

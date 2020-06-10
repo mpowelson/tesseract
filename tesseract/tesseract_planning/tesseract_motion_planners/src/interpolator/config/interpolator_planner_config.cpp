@@ -29,39 +29,15 @@
 
 namespace tesseract_motion_planners
 {
-//InterpolatorPlannerConfig::InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract, std::string manipulator)
-//  : tesseract(std::move(tesseract)), manipulator(std::move(manipulator))
-//{
-//}
-
-//InterpolatorPlannerConfig::InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
-//                                     std::string manipulator,
-//                                     std::vector<InterpolatorPlannerConfigurator::ConstPtr> planners)
-//  : tesseract(std::move(tesseract)), manipulator(std::move(manipulator)), planners(std::move(planners))
-//{
-//}
-
-//InterpolatorPlannerConfig::InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
-//                                     std::string manipulator,
-//                                     std::vector<InterpolatorPlannerConfigurator::ConstPtr> planners,
-//                                     Interpolator::geometric::SimpleSetupPtr simple_setup)
-//  : simple_setup(std::move(simple_setup))
-//  , tesseract(std::move(tesseract))
-//  , manipulator(std::move(manipulator))
-//  , planners(std::move(planners))
-//{
-//}
-
-bool InterpolatorPlannerConfig::generate()
+InterpolatorPlannerConfig::InterpolatorPlannerConfig(tesseract::Tesseract::ConstPtr tesseract)
+  : tesseract(std::move(tesseract))
 {
-//  return ((simple_setup != nullptr) && (tesseract != nullptr) && (!manipulator.empty()) && (!planners.empty()) &&
-//          (extractor != nullptr));
 }
 
 tesseract_common::TrajArray InterpolatorPlannerConfig::getTrajectory() const
 {
-//  assert(extractor != nullptr);
-//  return toTrajArray(this->simple_setup->getSolutionPath(), extractor);
+  //  assert(extractor != nullptr);
+  //  return toTrajArray(this->simple_setup->getSolutionPath(), extractor);
 }
 
 }  // namespace tesseract_motion_planners

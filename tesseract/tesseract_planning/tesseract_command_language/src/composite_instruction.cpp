@@ -66,4 +66,4 @@ void CompositeInstruction::flattenHelper(CompositeInstruction& flattened, const 
   }
 }
 
-}
+}  // namespace tesseract_planning
