@@ -41,6 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/cartesian_waypoint.h>
 #include <tesseract_command_language/joint_waypoint.h>
 #include <tesseract_command_language/core/waypoint.h>
+#include <tesseract_command_language/core/instruction.h>
+#include <tesseract_command_language/composite_instruction.h>
 
 namespace tesseract_motion_planners
 {
@@ -143,7 +145,10 @@ interpolate(const tesseract_motion_planners::Waypoint& start,
     }
   }
 }
+}  // namespace tesseract_motion_planners
 
+namespace tesseract_planning
+{
 /**
  * @brief Converts a waypoint to a cartesian waypoint
  * @param input Input waypoint. May be either a cartesian or joint waypoint
@@ -189,6 +194,34 @@ inline tesseract_planning::JointWaypoint toJointWaypoint(const tesseract_plannin
     return tesseract_planning::JointWaypoint(solution.topRows(seed.size()));
   }
 }
-}  // namespace tesseract_motion_planners
 
+/**
+ * @brief Helper function used by Flatten. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ */
+void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened, CompositeInstruction& composite)
+{
+  for (auto& i : composite)
+  {
+    if (i.isComposite())
+      FlattenHelper(flattened, *(i.cast<CompositeInstruction>()));
+    else
+      flattened.push_back(i);
+  }
+}
+
+/**
+ * @brief Flattens a CompositeInstruction into a vector of Instruction&
+ * @param instruction Input composite instruction to be flattened
+ * @return Vector of Instruction& representing the input flattened
+ */
+std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruction& instruction)
+{
+  std::vector<std::reference_wrapper<Instruction>> flattened;
+  FlattenHelper(flattened, instruction);
+  return flattened;
+}
+
+}  // namespace tesseract_planning
 #endif  // TESSERACT_PLANNING_UTILS_H

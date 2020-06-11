@@ -44,26 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_planning;
 
-// void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened, CompositeInstruction& composite);
-
-void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened, CompositeInstruction& composite)
-{
-  for (auto& i : composite)
-  {
-    if (i.isComposite())
-      FlattenHelper(flattened, *(i.cast<CompositeInstruction>()));
-    else
-      flattened.push_back(i);
-  }
-}
-
-std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruction& instruction)
-{
-  std::vector<std::reference_wrapper<Instruction>> flattened;
-  FlattenHelper(flattened, instruction);
-  return flattened;
-}
-
 /** @brief Construct a basic planner */
 tesseract_motion_planners::InterpolatorMotionPlanner::InterpolatorMotionPlanner(std::string name)
   : MotionPlanner(std::move(name))
@@ -143,7 +123,7 @@ tesseract_motion_planners::InterpolatorMotionPlanner::solve(tesseract_motion_pla
       else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT) &&
                wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT))
       {
-        auto cart_1 = tesseract_motion_planners::toCartesianWaypoint(
+        auto cart_1 = tesseract_planning::toCartesianWaypoint(
             wp_1, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
         auto cart_2 = wp_2.cast_const<tesseract_planning::CartesianWaypoint>();
         int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
@@ -153,7 +133,7 @@ tesseract_motion_planners::InterpolatorMotionPlanner::solve(tesseract_motion_pla
                wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
       {
         auto cart_1 = wp_1.cast_const<tesseract_planning::CartesianWaypoint>();
-        auto cart_2 = tesseract_motion_planners::toCartesianWaypoint(
+        auto cart_2 = tesseract_planning::toCartesianWaypoint(
             wp_2, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
         int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
         eigen_vec = interpolate(*cart_1, cart_2, size);
@@ -161,9 +141,9 @@ tesseract_motion_planners::InterpolatorMotionPlanner::solve(tesseract_motion_pla
       else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT) &&
                wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
       {
-        auto cart_1 = tesseract_motion_planners::toCartesianWaypoint(
+        auto cart_1 = tesseract_planning::toCartesianWaypoint(
             wp_1, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
-        auto cart_2 = tesseract_motion_planners::toCartesianWaypoint(
+        auto cart_2 = tesseract_planning::toCartesianWaypoint(
             wp_2, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
         int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
         eigen_vec = interpolate(cart_1, cart_2, size);
