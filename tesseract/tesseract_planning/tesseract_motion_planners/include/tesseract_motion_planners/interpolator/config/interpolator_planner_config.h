@@ -49,12 +49,6 @@ struct InterpolatorPlannerConfig
   InterpolatorPlannerConfig(InterpolatorPlannerConfig&&) noexcept = default;
   InterpolatorPlannerConfig& operator=(InterpolatorPlannerConfig&&) noexcept = default;
 
-  /**
-   * @brief Convert the seed to a TrajArray. This may not be needed
-   * @return Tesseract Trajectory
-   */
-  tesseract_common::TrajArray getTrajectory() const;
-
   /** @brief Tesseract object. ***REQUIRED*** */
   tesseract::Tesseract::ConstPtr tesseract;
 

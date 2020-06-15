@@ -34,19 +34,4 @@ InterpolatorPlannerConfig::InterpolatorPlannerConfig(tesseract::Tesseract::Const
 {
 }
 
-tesseract_common::TrajArray InterpolatorPlannerConfig::getTrajectory() const
-{
-  //  assert(extractor != nullptr);
-  //  return toTrajArray(this->simple_setup->getSolutionPath(), extractor);
-
-//  tesseract_common::TrajArray traj(flat_seed_copy.size(),
-//                                   flat_seed_copy[0].get().cast_const<MoveInstruction>()->getPosition().size());
-//  for (std::size_t index = 0; index < flat_seed_copy.size(); index++)
-//  {
-//    traj.row(static_cast<Eigen::Index>(index)) =
-//        flat_seed_copy[index].get().cast_const<MoveInstruction>()->getPosition().transpose();
-//  }
-  return tesseract_common::TrajArray();
-}
-
 }  // namespace tesseract_motion_planners
