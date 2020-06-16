@@ -123,7 +123,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
     case static_cast<int>(WaypointType::CARTESIAN_WAYPOINT):
     {
       const auto* w1 = start.cast_const<Eigen::Isometry3d>();
-      const auto* w2 = start.cast_const<Eigen::Isometry3d>();
+      const auto* w2 = stop.cast_const<Eigen::Isometry3d>();
       tesseract_common::VectorIsometry3d eigen_poses = interpolate(*w1, *w2, steps);
 
       std::vector<Waypoint> result;
@@ -136,7 +136,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
     case static_cast<int>(WaypointType::JOINT_WAYPOINT):
     {
       const auto* w1 = start.cast_const<Eigen::VectorXd>();
-      const auto* w2 = start.cast_const<Eigen::VectorXd>();
+      const auto* w2 = stop.cast_const<Eigen::VectorXd>();
       Eigen::MatrixXd joint_poses = interpolate(*w1, *w2, steps);
 
       std::vector<Waypoint> result;
@@ -346,6 +346,132 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
   }
   return seed;
 }
+
+/**
+ * @brief Converts a waypoint to a cartesian waypoint
+ * @param input Input waypoint. May be either a cartesian or joint waypoint
+ * @param kin Forward Kinematics used to convert joint waypoint to cartesian
+ * @return Cartesian waypoint
+ */
+inline CartesianWaypoint toCartesianWaypoint(const Waypoint& input,
+                                             const tesseract_kinematics::ForwardKinematics::Ptr& kin)
+{
+  if (input.getType() == static_cast<int>(WaypointType::CARTESIAN_WAYPOINT))
+  {
+    return *input.cast_const<CartesianWaypoint>();
+  }
+  else if (input.getType() == static_cast<int>(WaypointType::JOINT_WAYPOINT))
+  {
+    Eigen::Isometry3d solution;
+    kin->calcFwdKin(solution, *input.cast_const<JointWaypoint>());
+    return CartesianWaypoint(solution);
+  }
+
+  return CartesianWaypoint();
+}
+
+/**
+ * @brief Converts a waypoint to a joint waypoint
+ * @param input Input waypoint. May be either a cartesian or joint waypoint
+ * @param kin Inverse kinematics used to convert a cartesian waypoint to joint
+ * @param seed Seed position used for inverse kinematics
+ * @return Joint Waypoint
+ */
+inline JointWaypoint toJointWaypoint(const Waypoint& input,
+                                     const tesseract_kinematics::InverseKinematics::Ptr& kin,
+                                     const JointWaypoint& seed)
+{
+  if (input.getType() == static_cast<int>(WaypointType::JOINT_WAYPOINT))
+  {
+    return *input.cast_const<JointWaypoint>();
+  }
+  else if (input.getType() == static_cast<int>(WaypointType::CARTESIAN_WAYPOINT))
+  {
+    Eigen::VectorXd solution;
+    kin->calcInvKin(solution, *input.cast_const<CartesianWaypoint>(), seed);
+    return JointWaypoint(solution.topRows(seed.size()));
+  }
+  throw std::runtime_error("Unsupported!");
+}
+
+/**
+ * @brief Helper function used by Flatten. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ */
+void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened, CompositeInstruction& composite)
+{
+  for (auto& i : composite)
+  {
+    if (i.isComposite())
+      FlattenHelper(flattened, *(i.cast<CompositeInstruction>()));
+    else
+      flattened.push_back(i);
+  }
+}
+
+/**
+ * @brief Flattens a CompositeInstruction into a vector of Instruction&
+ * @param instruction Input composite instruction to be flattened
+ * @return A new flattened vector referencing the original instruction elements
+ */
+std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruction& instruction)
+{
+  std::vector<std::reference_wrapper<Instruction>> flattened;
+  FlattenHelper(flattened, instruction);
+  return flattened;
+}
+
+/**
+ * @brief FlattenToPatternHelper Helper for FlattenToPattern
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ * @param pattern CompositeInstruction used to determine if instruction will be flattened
+ */
+void FlattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
+                            CompositeInstruction& composite,
+                            const CompositeInstruction& pattern)
+{
+  if (composite.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return;
+  }
+
+  for (std::size_t i = 0; i < pattern.size(); i++)
+  {
+    if (pattern.at(i).isComposite() && composite[i].isComposite())
+      FlattenToPatternHelper(
+          flattened, *(composite[i].cast<CompositeInstruction>()), *pattern.at(i).cast_const<CompositeInstruction>());
+    else
+      flattened.push_back(composite[i]);
+  }
+}
+
+/**
+ * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
+ * instruction will only be flattened if the corresponding element in pattern is flattenable.
+ *
+ * The motivation for this utility is a case where you flatten only the elements in a seed that correspond to composites
+ * in the parent instruction
+ * @param instruction CompositeInstruction that will be flattened
+ * @param pattern CompositeInstruction used to determine if instruction will be flattened
+ * @return A new flattened vector referencing the original instruction elements
+ */
+std::vector<std::reference_wrapper<Instruction>> FlattenToPattern(CompositeInstruction& instruction,
+                                                                  const CompositeInstruction& pattern)
+{
+  if (instruction.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return std::vector<std::reference_wrapper<Instruction>>();
+  }
+
+  std::vector<std::reference_wrapper<Instruction>> flattened;
+  FlattenToPatternHelper(flattened, instruction, pattern);
+  return flattened;
+}
+
 }  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_PLANNING_UTILS_H
