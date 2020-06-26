@@ -140,7 +140,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
       Eigen::MatrixXd joint_poses = interpolate(*w1, *w2, steps);
 
       std::vector<Waypoint> result;
-      result.reserve(joint_poses.cols());
+      result.reserve(static_cast<std::size_t>(joint_poses.cols()));
       for ( int i = 0; i < joint_poses.cols(); ++i)
         result.push_back(JointWaypoint(joint_poses.col(i)));
 

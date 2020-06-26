@@ -17,20 +17,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
-                                   const Eigen::Isometry3d& cartesian_waypoint,
-                                   const PlanInstruction& parent_instruction,
-                                   const std::vector<std::string> &active_links,
-                                   int index)
+void OMPLDefaultPlanProfile::apply(OMPLProblem& /*prob*/,
+                                   const Eigen::Isometry3d& /*cartesian_waypoint*/,
+                                   const PlanInstruction& /*parent_instruction*/,
+                                   const std::vector<std::string> &/*active_links*/,
+                                   int /*index*/)
 {
   assert(false);
 }
 
 void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
                                    const Eigen::VectorXd& joint_waypoint,
-                                   const PlanInstruction& parent_instruction,
-                                   const std::vector<std::string> &active_links,
-                                   int index)
+                                   const PlanInstruction& /*parent_instruction*/,
+                                   const std::vector<std::string> &/*active_links*/,
+                                   int /*index*/)
 {
   prob.planners = planners;
   prob.max_solutions = max_solutions;

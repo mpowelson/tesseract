@@ -147,7 +147,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
 //        const Waypoint& wp = plan_instruction->getWaypoint();
-      const std::string& working_frame = plan_instruction->getWorkingFrame();
+//      const std::string& working_frame = plan_instruction->getWorkingFrame();
 //        const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
       assert(seed[i].isComposite());
@@ -169,7 +169,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
       {
         if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+//          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
           if (prev_plan_instruction)
           {
             assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));

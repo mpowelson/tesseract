@@ -252,8 +252,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   swp = start_state;
   std::vector<double> ewp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
 
-  wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), swp.size());
-  wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), ewp.size());
+  wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<Eigen::Index>(swp.size()));
+  wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), static_cast<Eigen::Index>(ewp.size()));
 
   // Define Plan Instructions
   plan_f0 = PlanInstruction(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");

@@ -93,7 +93,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
 //        const Waypoint& wp = plan_instruction->getWaypoint();
-      const std::string& working_frame = plan_instruction->getWorkingFrame();
+//      const std::string& working_frame = plan_instruction->getWorkingFrame();
 //        const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
       assert(seed[i].isComposite());

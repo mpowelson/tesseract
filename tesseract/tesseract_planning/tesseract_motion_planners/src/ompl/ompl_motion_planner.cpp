@@ -53,7 +53,7 @@ bool OMPLMotionPlanner::terminate()
 }
 
 tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
-                                                      PostPlanCheckType check_type,
+                                                      PostPlanCheckType /*check_type*/,
                                                       bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
@@ -204,8 +204,8 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
       CONSOLE_BRIDGE_logInform("%s, final trajectory is collision free", name_.c_str());
     }
 
-    return response.status;
   }
+  return response.status;
 }
 
 void OMPLMotionPlanner::clear()

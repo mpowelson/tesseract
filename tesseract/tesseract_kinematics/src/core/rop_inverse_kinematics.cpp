@@ -39,7 +39,7 @@ InverseKinematics::Ptr RobotOnPositionerInvKin::clone() const
 {
   auto cloned_invkin = std::make_shared<RobotOnPositionerInvKin>();
   cloned_invkin->init(*this);
-  return std::move(cloned_invkin);
+  return cloned_invkin;
 }
 
 bool RobotOnPositionerInvKin::calcInvKinHelper(std::vector<double> &solutions,
