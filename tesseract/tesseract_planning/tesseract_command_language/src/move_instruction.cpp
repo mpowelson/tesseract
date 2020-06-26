@@ -19,16 +19,16 @@ const std::string& MoveInstruction::getWorkingFrame() const { return working_fra
 void MoveInstruction::setProfile(const std::string& profile) { profile_ = (profile.empty()) ? "DEFAULT" : profile; }
 const std::string& MoveInstruction::getProfile() const { return profile_; }
 
-void MoveInstruction::setPosition(Eigen::VectorXd position) { position_ = position; }
+void MoveInstruction::setPosition(const Eigen::VectorXd& position) { position_ = position; }
 const Eigen::VectorXd& MoveInstruction::getPosition() const { return position_; }
 
-void MoveInstruction::setVelocity(Eigen::VectorXd velocity) { velocity_ = velocity; }
+void MoveInstruction::setVelocity(const Eigen::VectorXd& velocity) { velocity_ = velocity; }
 const Eigen::VectorXd& MoveInstruction::getVelocity() const { return velocity_; }
 
-void MoveInstruction::setAcceleration(Eigen::VectorXd acceleration) { acceleration_ = acceleration; }
+void MoveInstruction::setAcceleration(const Eigen::VectorXd& acceleration) { acceleration_ = acceleration; }
 const Eigen::VectorXd& MoveInstruction::getAcceleration() const { return acceleration_; }
 
-void MoveInstruction::setEffort(Eigen::VectorXd effort) { effort_ = effort; }
+void MoveInstruction::setEffort(const Eigen::VectorXd& effort) { effort_ = effort; }
 const Eigen::VectorXd& MoveInstruction::getEffort() const { return effort_; }
 
 void MoveInstruction::setTime(double time) { time_ = time; }

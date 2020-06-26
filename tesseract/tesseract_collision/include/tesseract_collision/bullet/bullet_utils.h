@@ -873,8 +873,8 @@ public:
 class TesseractOverlapFilterCallback : public btOverlapFilterCallback
 {
 public:
-  TesseractOverlapFilterCallback(ContactTestData& contact_data, bool verbose = false)
-    : contact_data_(contact_data), verbose_(verbose)
+  TesseractOverlapFilterCallback(ContactTestData& /*contact_data*/, bool verbose = false)
+    : /*contact_data_(contact_data),*/ verbose_(verbose)
   {
   }
 
@@ -889,7 +889,7 @@ public:
   }
 
 private:
-  ContactTestData& contact_data_;
+  //  ContactTestData& contact_data_;
   bool verbose_{ false };
 };
 
