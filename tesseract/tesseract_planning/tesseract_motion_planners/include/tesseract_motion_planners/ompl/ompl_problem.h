@@ -77,7 +77,7 @@ struct OMPLProblem
   tesseract_collision::DiscreteContactManager::Ptr contact_checker;
 
   // Problem Configuration
-  OMPLProblemConfiguration configuration {OMPLProblemConfiguration::REAL_STATE_SPACE};
+  OMPLProblemConfiguration configuration{ OMPLProblemConfiguration::REAL_STATE_SPACE };
 
   // Kinematic Objects
   tesseract_kinematics::ForwardKinematics::ConstPtr manip_fwd_kin;
@@ -139,9 +139,8 @@ struct OMPLProblem
    * @return Tesseract Trajectory
    */
   tesseract_common::TrajArray getTrajectory() const;
-
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PROBLEM_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PROBLEM_H

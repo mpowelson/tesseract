@@ -15,8 +15,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
-
 template <typename FloatType>
 struct DescartesProblem
 {
@@ -49,10 +47,10 @@ struct DescartesProblem
   std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraints;
   std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers;
   int num_threads = descartes_light::Solver<double>::getMaxThreads();
-  int dof {0};
+  int dof{ 0 };
 };
 using DescartesProblemF = DescartesProblem<float>;
 using DescartesProblemD = DescartesProblem<double>;
 
-}
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_PROBLEM_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_PROBLEM_H

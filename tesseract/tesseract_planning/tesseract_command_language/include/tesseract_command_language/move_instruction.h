@@ -8,7 +8,6 @@
 
 namespace tesseract_planning
 {
-
 enum class MoveInstructionType : int
 {
   LINEAR,
@@ -72,19 +71,19 @@ public:
   bool isCircular() const;
 
 private:
-  int type_ { static_cast<int>(InstructionType::MOVE_INSTRUCTION) };
+  int type_{ static_cast<int>(InstructionType::MOVE_INSTRUCTION) };
 
   MoveInstructionType move_type_;
   std::string description_;
 
   /** @brief The profile used for this move instruction */
-  std::string profile_ {"DEFAULT"};
+  std::string profile_{ "DEFAULT" };
 
   /** @brief The assigned waypoint (Cartesian or Joint) */
   Waypoint waypoint_;
 
   /** @brief The tool center point */
-  Eigen::Isometry3d tcp_ { Eigen::Isometry3d::Identity() };
+  Eigen::Isometry3d tcp_{ Eigen::Isometry3d::Identity() };
 
   /** @brief The working frame the waypoint is relative to */
   std::string working_frame_;
@@ -111,6 +110,6 @@ private:
   double time_;
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_MOVE_INSTRUCTION_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_MOVE_INSTRUCTION_H

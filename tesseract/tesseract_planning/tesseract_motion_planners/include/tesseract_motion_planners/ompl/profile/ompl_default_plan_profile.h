@@ -33,7 +33,6 @@
 
 namespace tesseract_planning
 {
-
 /**
  * @brief OMPL does not support the concept of multi waypoint planning like descartes and trajopt. Because of this
  * every plan instruction will be its a seperate ompl motion plan and therefore planning information is relevent
@@ -124,13 +123,13 @@ public:
   void apply(OMPLProblem& prob,
              const Eigen::Isometry3d& cartesian_waypoint,
              const PlanInstruction& parent_instruction,
-             const std::vector<std::string> &active_links,
+             const std::vector<std::string>& active_links,
              int index) override;
 
   void apply(OMPLProblem& prob,
              const Eigen::VectorXd& joint_waypoint,
              const PlanInstruction& parent_instruction,
-             const std::vector<std::string> &active_links,
+             const std::vector<std::string>& active_links,
              int index) override;
 
   /**
@@ -140,20 +139,21 @@ public:
    * @return OMPL state sampler shared pointer
    */
   ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
-                                                                  const Eigen::MatrixX2d &limits) const;
+                                                                  const Eigen::MatrixX2d& limits) const;
 
 protected:
   bool processStartAndGoalState(OMPLProblem& prob,
                                 const tesseract_environment::Environment::ConstPtr& env,
                                 const tesseract_kinematics::ForwardKinematics::ConstPtr& kin);
-  ompl::base::StateValidityCheckerPtr processStateValidator(OMPLProblem& prob,
-                                                            const tesseract_environment::Environment::ConstPtr& env,
-                                                            const tesseract_kinematics::ForwardKinematics::ConstPtr& kin);
+  ompl::base::StateValidityCheckerPtr
+  processStateValidator(OMPLProblem& prob,
+                        const tesseract_environment::Environment::ConstPtr& env,
+                        const tesseract_kinematics::ForwardKinematics::ConstPtr& kin);
   void processMotionValidator(ompl::base::StateValidityCheckerPtr svc_without_collision,
                               OMPLProblem& prob,
                               const tesseract_environment::Environment::ConstPtr& env,
                               const tesseract_kinematics::ForwardKinematics::ConstPtr& kin);
   void processOptimizationObjective(OMPLProblem& prob);
 };
-}
-#endif // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_DEFAULT_PLAN_PROFILE_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_DEFAULT_PLAN_PROFILE_H

@@ -17,19 +17,20 @@
 
 namespace tesseract_planning
 {
-
 template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& prob,
                                                    const Eigen::Isometry3d& cartesian_waypoint,
                                                    const PlanInstruction& parent_instruction,
-                                                   const std::vector<std::string> &active_links,
+                                                   const std::vector<std::string>& active_links,
                                                    int index)
 {
   /* Check if this cartesian waypoint is dynamic
    * (i.e. defined relative to a frame that will move with the kinematic chain) */
   auto it = std::find(active_links.begin(), active_links.end(), parent_instruction.getWorkingFrame());
-  if (it != active_links.end() && prob.configuration != DescartesProblemD::Configuration::ROBOT_WITH_EXTERNAL_POSITIONER)
-    throw std::runtime_error("DescartesDefaultPlanProfile: Assigned dynamic waypoint but configuration is not ROBOT_WITH_EXTERNAL_POSITIONER");
+  if (it != active_links.end() &&
+      prob.configuration != DescartesProblemD::Configuration::ROBOT_WITH_EXTERNAL_POSITIONER)
+    throw std::runtime_error("DescartesDefaultPlanProfile: Assigned dynamic waypoint but configuration is not "
+                             "ROBOT_WITH_EXTERNAL_POSITIONER");
 
   if (prob.configuration == DescartesProblemD::Configuration::ROBOT_ONLY)
     applyRobotOnly(prob, cartesian_waypoint, parent_instruction, active_links, index);
@@ -48,13 +49,22 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
       if (enable_edge_collision)
       {
         auto compound_evaluator = std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>();
-        compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
-        compound_evaluator->push_back(std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(), active_links, prob.joint_names, edge_collision_saftey_margin, edge_longest_valid_segment_length, allow_collision, debug));
+        compound_evaluator->push_back(
+            std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+        compound_evaluator->push_back(
+            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(),
+                                                                         active_links,
+                                                                         prob.joint_names,
+                                                                         edge_collision_saftey_margin,
+                                                                         edge_longest_valid_segment_length,
+                                                                         allow_collision,
+                                                                         debug));
         prob.edge_evaluators.push_back(compound_evaluator);
       }
       else
       {
-        prob.edge_evaluators.push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+        prob.edge_evaluators.push_back(
+            std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
       }
     }
     else
@@ -75,7 +85,7 @@ template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& prob,
                                                    const Eigen::VectorXd& joint_waypoint,
                                                    const PlanInstruction& parent_instruction,
-                                                   const std::vector<std::string> &active_links,
+                                                   const std::vector<std::string>& active_links,
                                                    int index)
 {
   if (prob.configuration == DescartesProblemD::Configuration::ROBOT_ONLY)
@@ -95,13 +105,22 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
       if (enable_edge_collision)
       {
         auto compound_evaluator = std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>();
-        compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
-        compound_evaluator->push_back(std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(), active_links, prob.joint_names, edge_collision_saftey_margin, edge_longest_valid_segment_length, allow_collision, debug));
+        compound_evaluator->push_back(
+            std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+        compound_evaluator->push_back(
+            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(),
+                                                                         active_links,
+                                                                         prob.joint_names,
+                                                                         edge_collision_saftey_margin,
+                                                                         edge_longest_valid_segment_length,
+                                                                         allow_collision,
+                                                                         debug));
         prob.edge_evaluators.push_back(compound_evaluator);
       }
       else
       {
-        prob.edge_evaluators.push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+        prob.edge_evaluators.push_back(
+            std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
       }
     }
     else
@@ -122,12 +141,16 @@ template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::applyRobotOnly(DescartesProblem<FloatType>& prob,
                                                             const Eigen::Isometry3d& cartesian_waypoint,
                                                             const PlanInstruction& parent_instruction,
-                                                            const std::vector<std::string> &active_links,
+                                                            const std::vector<std::string>& active_links,
                                                             int index)
 {
   typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
   if (enable_collision)
-    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironmentConst(), active_links, prob.manip_fwd_kin->getJointNames(), collision_safety_margin, debug);
+    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironmentConst(),
+                                                         active_links,
+                                                         prob.manip_fwd_kin->getJointNames(),
+                                                         collision_safety_margin,
+                                                         debug);
 
   // Check if the waypoint is not relative to the world coordinate system
   Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
@@ -150,7 +173,7 @@ template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::applyRobotOnly(DescartesProblem<FloatType>& prob,
                                                             const Eigen::VectorXd& joint_waypoint,
                                                             const PlanInstruction& parent_instruction,
-                                                            const std::vector<std::string> &active_links,
+                                                            const std::vector<std::string>& active_links,
                                                             int index)
 {
   std::vector<FloatType> joint_pose(joint_waypoint.data(),
@@ -163,12 +186,16 @@ template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::applyRobotOnPositioner(DescartesProblem<FloatType>& prob,
                                                                     const Eigen::Isometry3d& cartesian_waypoint,
                                                                     const PlanInstruction& parent_instruction,
-                                                                    const std::vector<std::string> &active_links,
+                                                                    const std::vector<std::string>& active_links,
                                                                     int index)
 {
   typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
   if (enable_collision)
-    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironmentConst(), active_links, prob.manip_fwd_kin->getJointNames(), collision_safety_margin, debug);
+    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironmentConst(),
+                                                         active_links,
+                                                         prob.manip_fwd_kin->getJointNames(),
+                                                         collision_safety_margin,
+                                                         debug);
 
   // Check if the waypoint is not relative to the world coordinate system
   Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
@@ -193,7 +220,7 @@ template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::applyRobotOnPositioner(DescartesProblem<FloatType>& prob,
                                                                     const Eigen::VectorXd& joint_waypoint,
                                                                     const PlanInstruction& parent_instruction,
-                                                                    const std::vector<std::string> &active_links,
+                                                                    const std::vector<std::string>& active_links,
                                                                     int index)
 {
   std::vector<FloatType> joint_pose(joint_waypoint.data(),
@@ -203,15 +230,20 @@ void DescartesDefaultPlanProfile<FloatType>::applyRobotOnPositioner(DescartesPro
 }
 
 template <typename FloatType>
-void DescartesDefaultPlanProfile<FloatType>::applyRobotWithExternalPositioner(DescartesProblem<FloatType>& prob,
-                                                                              const Eigen::Isometry3d& cartesian_waypoint,
-                                                                              const PlanInstruction& parent_instruction,
-                                                                              const std::vector<std::string> &active_links,
-                                                                              int index)
+void DescartesDefaultPlanProfile<FloatType>::applyRobotWithExternalPositioner(
+    DescartesProblem<FloatType>& prob,
+    const Eigen::Isometry3d& cartesian_waypoint,
+    const PlanInstruction& parent_instruction,
+    const std::vector<std::string>& active_links,
+    int index)
 {
   typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
   if (enable_collision)
-    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironmentConst(), active_links, prob.manip_fwd_kin->getJointNames(), collision_safety_margin, debug);
+    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironmentConst(),
+                                                         active_links,
+                                                         prob.manip_fwd_kin->getJointNames(),
+                                                         collision_safety_margin,
+                                                         debug);
 
   // Check if the waypoint is not relative to the world coordinate system
   Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
@@ -233,11 +265,12 @@ void DescartesDefaultPlanProfile<FloatType>::applyRobotWithExternalPositioner(De
 }
 
 template <typename FloatType>
-void DescartesDefaultPlanProfile<FloatType>::applyRobotWithExternalPositioner(DescartesProblem<FloatType>& prob,
-                                                                              const Eigen::VectorXd& joint_waypoint,
-                                                                              const PlanInstruction& parent_instruction,
-                                                                              const std::vector<std::string> &active_links,
-                                                                              int index)
+void DescartesDefaultPlanProfile<FloatType>::applyRobotWithExternalPositioner(
+    DescartesProblem<FloatType>& prob,
+    const Eigen::VectorXd& joint_waypoint,
+    const PlanInstruction& parent_instruction,
+    const std::vector<std::string>& active_links,
+    int index)
 {
   std::vector<FloatType> joint_pose(joint_waypoint.data(),
                                     joint_waypoint.data() + joint_waypoint.rows() * joint_waypoint.cols());
@@ -245,6 +278,6 @@ void DescartesDefaultPlanProfile<FloatType>::applyRobotWithExternalPositioner(De
   prob.samplers.push_back(std::move(sampler));
 }
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_IMPL_DESCARTES_DEFAULT_PLAN_PROFILE_HPP
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_IMPL_DESCARTES_DEFAULT_PLAN_PROFILE_HPP

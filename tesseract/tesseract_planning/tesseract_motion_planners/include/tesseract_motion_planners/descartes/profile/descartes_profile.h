@@ -9,7 +9,6 @@
 
 namespace tesseract_planning
 {
-
 template <typename FloatType>
 class DescartesPlanProfile
 {
@@ -20,21 +19,21 @@ public:
   virtual void apply(DescartesProblem<FloatType>& prob,
                      const Eigen::Isometry3d& cartesian_waypoint,
                      const PlanInstruction& parent_instruction,
-                     const std::vector<std::string> &active_links,
+                     const std::vector<std::string>& active_links,
                      int index) = 0;
 
   virtual void apply(DescartesProblem<FloatType>& prob,
                      const Eigen::VectorXd& joint_waypoint,
                      const PlanInstruction& parent_instruction,
-                     const std::vector<std::string> &active_links,
+                     const std::vector<std::string>& active_links,
                      int index) = 0;
 };
 
 /** @todo Currently descartes does not have support of composite profile everything is handled by the plan profile */
 
-//class TrajOptCompositeProfile
+// class TrajOptCompositeProfile
 //{
-//public:
+// public:
 //  using Ptr = std::shared_ptr<TrajOptCompositeProfile>;
 //  using ConstPtr = std::shared_ptr<const TrajOptCompositeProfile>;
 
@@ -45,6 +44,6 @@ public:
 //                     const std::vector<int>& fixed_indices) = 0;
 //};
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_DESCARTES_PROFILE_H
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_DESCARTES_PROFILE_H

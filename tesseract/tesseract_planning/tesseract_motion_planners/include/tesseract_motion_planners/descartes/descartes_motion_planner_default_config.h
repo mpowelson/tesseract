@@ -50,7 +50,9 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
   DescartesMotionPlannerDefaultConfig(DescartesMotionPlannerDefaultConfig&&) = default;             // NOLINT
   DescartesMotionPlannerDefaultConfig& operator=(DescartesMotionPlannerDefaultConfig&&) = default;  // NOLINT
 
-  typename DescartesProblem<FloatType>::Configuration configuration {DescartesProblem<FloatType>::Configuration::ROBOT_ONLY};
+  typename DescartesProblem<FloatType>::Configuration configuration{
+    DescartesProblem<FloatType>::Configuration::ROBOT_ONLY
+  };
 
   std::string manipulator;
   std::string manipulator_ik_solver;
@@ -87,5 +89,5 @@ private:
 
 using DescartesMotionPlannerDefaultConfigD = DescartesMotionPlannerDefaultConfig<double>;
 using DescartesMotionPlannerDefaultConfigF = DescartesMotionPlannerDefaultConfig<float>;
-}
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H

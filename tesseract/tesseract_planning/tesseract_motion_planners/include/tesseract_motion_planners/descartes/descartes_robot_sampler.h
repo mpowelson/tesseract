@@ -72,7 +72,7 @@ public:
 
 private:
   Eigen::Isometry3d target_pose_;                                          /**< @brief The target pose to sample */
-  PoseSamplerFn target_pose_sampler_;           /**< @brief Target pose sampler function */
+  PoseSamplerFn target_pose_sampler_;                                      /**< @brief Target pose sampler function */
   tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics_;     /**< @brief The robot inverse kinematics */
   typename descartes_light::CollisionInterface<FloatType>::Ptr collision_; /**< @brief The collision interface */
   Eigen::Isometry3d world_to_robot_base_; /**< @brief The transform from world to the base of the robot */

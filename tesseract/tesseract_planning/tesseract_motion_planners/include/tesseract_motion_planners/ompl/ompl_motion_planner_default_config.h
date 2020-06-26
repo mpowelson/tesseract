@@ -57,7 +57,7 @@ struct OMPLMotionPlannerDefaultConfig : public OMPLMotionPlannerConfig
   tesseract::Tesseract::ConstPtr tesseract;
   tesseract_environment::EnvState::ConstPtr env_state;
 
-  OMPLProblemConfiguration configuration {OMPLProblemConfiguration::REAL_STATE_SPACE};
+  OMPLProblemConfiguration configuration{ OMPLProblemConfiguration::REAL_STATE_SPACE };
 
   std::string manipulator;
   std::string manipulator_ik_solver;
@@ -102,5 +102,5 @@ private:
 
   OMPLProblem::UPtr createSubProblem();
 };
-}
-#endif // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_MOTION_PLANNER_DEFAULT_CONFIG_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_MOTION_PLANNER_DEFAULT_CONFIG_H

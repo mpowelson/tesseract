@@ -80,7 +80,7 @@ public:
 
 private:
   Eigen::Isometry3d target_pose_;                                           /**< @brief The target pose to sample */
-  PoseSamplerFn target_pose_sampler_;            /**< @brief Target pose sampler function */
+  PoseSamplerFn target_pose_sampler_;                                       /**< @brief Target pose sampler function */
   tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics_; /**< @brief The robot base positioner
                                                                                kinematics */
   tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics_;      /**< @brief The robot inverse kinematics */
