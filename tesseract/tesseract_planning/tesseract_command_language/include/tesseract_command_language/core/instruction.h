@@ -56,21 +56,21 @@ struct InstructionInner final : InstructionInnerBase
     return std::make_unique<InstructionInner>(instruction_);
   }
 
-  void* recover() { return &instruction_; }
+  void* recover() override { return &instruction_; }
 
-  int getType() const { return instruction_.getType(); }
+  int getType() const override { return instruction_.getType(); }
 
-  const std::string& getDescription() const { return instruction_.getDescription(); }
+  const std::string& getDescription() const override { return instruction_.getDescription(); }
 
-  void setDescription(const std::string& description) { instruction_.setDescription(description); }
+  void setDescription(const std::string& description) override { instruction_.setDescription(description); }
 
-  bool isComposite() const { return instruction_.isComposite(); }
+  bool isComposite() const override { return instruction_.isComposite(); }
 
-  bool isPlan() const { return instruction_.isPlan(); }
+  bool isPlan() const override { return instruction_.isPlan(); }
 
-  bool isMove() const { return instruction_.isMove(); }
+  bool isMove() const override { return instruction_.isMove(); }
 
-  void print() const { instruction_.print(); }
+  void print() const override { instruction_.print(); }
 
   T instruction_;
 };

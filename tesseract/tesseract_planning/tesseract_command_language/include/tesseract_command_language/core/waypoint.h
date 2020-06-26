@@ -44,9 +44,9 @@ struct WaypointInner final : WaypointInnerBase
 
   std::unique_ptr<WaypointInnerBase> clone() const override { return std::make_unique<WaypointInner>(waypoint_); }
 
-  int getType() const { return waypoint_.getType(); }
+  int getType() const override { return waypoint_.getType(); }
 
-  void* recover() { return &waypoint_; }
+  void* recover() override { return &waypoint_; }
 
   T waypoint_;
 };
