@@ -27,13 +27,14 @@
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
 
 #include <trajopt/problem_description.hpp>
+#include <tesseract_motion_planners/core/types.h>
 
 namespace tesseract_planning
 {
 /**
  * @brief The TrajOptPlannerConfigBase struct
  */
-struct TrajOptPlannerConfig
+struct TrajOptPlannerConfig : public PlannerConfig
 {
   using Ptr = std::shared_ptr<TrajOptPlannerConfig>;
   using ConstPtr = std::shared_ptr<const TrajOptPlannerConfig>;
@@ -51,7 +52,7 @@ struct TrajOptPlannerConfig
    * @brief Generates the TrajOpt problem and saves the result internally
    * @return True on success, false on failure
    */
-  virtual bool generate();
+  virtual bool generate(const PlannerRequest& request);
 
   /** @brief Optimization parameters to be used (Optional) */
   sco::BasicTrustRegionSQPParameters params;

@@ -29,7 +29,7 @@
 #include <tesseract/tesseract.h>
 #include <tesseract_common/status_code.h>
 #include <tesseract_common/types.h>
-#include <tesseract_command_language/core/instruction.h>
+#include <tesseract_command_language/command_language.h>
 
 namespace tesseract_planning
 {

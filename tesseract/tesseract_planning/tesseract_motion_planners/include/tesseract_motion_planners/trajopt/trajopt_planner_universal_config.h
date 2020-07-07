@@ -25,7 +25,7 @@ struct TrajOptPlannerUniversalConfig : public TrajOptPlannerConfig
   TrajOptPlannerUniversalConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
 
   /** @brief Generates the TrajOpt problem and saves the result internally */
-  bool generate() override;
+  bool generate(const PlannerRequest& request) override;
 
   /** @brief This is used to process the results into the seed trajectory
    *
