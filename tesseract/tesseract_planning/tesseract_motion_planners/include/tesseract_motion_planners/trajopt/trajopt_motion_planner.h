@@ -68,7 +68,8 @@ public:
    * to console
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response,
+  tesseract_common::StatusCode solve(const PlannerRequest& request,
+                                     PlannerResponse& response,
                                      PostPlanCheckType check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
                                      bool verbose = false) override;
 

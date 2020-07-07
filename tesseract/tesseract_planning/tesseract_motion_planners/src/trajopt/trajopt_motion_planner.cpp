@@ -101,7 +101,8 @@ void TrajOptMotionPlanner::clear()
   config_ = nullptr;
 }
 
-tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response,
+tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& request,
+                                                         PlannerResponse& response,
                                                          PostPlanCheckType check_type,
                                                          bool verbose)
 {

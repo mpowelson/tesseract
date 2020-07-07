@@ -29,7 +29,7 @@
 #include <tesseract/tesseract.h>
 #include <tesseract_common/status_code.h>
 #include <tesseract_common/types.h>
-#include <tesseract_command_language/core/waypoint.h>
+#include <tesseract_command_language/core/instruction.h>
 
 namespace tesseract_planning
 {
@@ -37,18 +37,39 @@ struct PlannerRequest
 {
   std::string name;                                      /**< @brief The name of the planner to use */
   tesseract::Tesseract::ConstPtr tesseract;              /**< @brief Tesseract */
-  tesseract_environment::EnvState::ConstPtr start_state; /**< @brief The start state to use for planning */
-  std::string config;                                    /**< @brief The configuration to use (json file) */
-  std::string config_format;                             /**< @brief The file extension used to parse config */
+  tesseract_environment::EnvState::ConstPtr env_state; /**< @brief The start state to use for planning */
+
+  std::string manipulator;
+  std::string manipulator_ik_solver;
+
+  /**
+   * @brief The program instruction
+   * This must containt a minimum of two move instruction the first move instruction is the start state
+   */
+  CompositeInstruction instructions;
+  /**
+   * @brief This should be a one to one match with the instructions where the PlanInstruction is replaced with a
+   * CompositeInstruction of MoveInstructions.
+   */
+  CompositeInstruction seed;
 };
 
 struct PlannerResponse
 {
-  tesseract_common::JointTrajectory joint_trajectory;                /**< @brief The joint trajectory */
+  CompositeInstruction results;
   tesseract_common::StatusCode status;                               /**< @brief The status information */
-  std::vector<std::reference_wrapper<Waypoint>> succeeded_waypoints; /**< @brief Waypoints for which the planner
+  std::vector<std::reference_wrapper<Instruction>> succeeded_instructions; /**< @brief Waypoints for which the planner
                                                                         succeeded */
-  std::vector<std::reference_wrapper<Waypoint>> failed_waypoints; /**< @brief Waypoints for which the planner failed */
+  std::vector<std::reference_wrapper<Instruction>> failed_instructions; /**< @brief Waypoints for which the planner failed */
+};
+
+class PlannerConfig
+{
+public:
+  using Ptr = std::shared_ptr<PlannerConfig>;
+  using ConstPtr = std::shared_ptr<const PlannerConfig>;
+
+  virtual bool generate(const PlannerRequest& request) = 0;
 };
 
 }  // namespace tesseract_planning
