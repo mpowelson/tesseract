@@ -57,7 +57,6 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
    */
   std::unordered_map<std::string, typename DescartesPlanProfile<FloatType>::Ptr> plan_profiles;
 
-
   bool generate(const PlannerRequest& request) override;
 
 private:

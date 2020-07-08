@@ -30,9 +30,12 @@
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
 
-namespace tesseract_planning {
-
-trajopt::TrajOptProb DefaultProblemGenerator(const PlannerRequest& request, std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles, std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profiles)
+namespace tesseract_planning
+{
+trajopt::TrajOptProb
+DefaultProblemGenerator(const PlannerRequest& request,
+                        std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles,
+                        std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profiles)
 {
   auto pci = std::make_shared<trajopt::ProblemConstructionInfo>(request.tesseract);
 
@@ -316,7 +319,7 @@ trajopt::TrajOptProb DefaultProblemGenerator(const PlannerRequest& request, std:
   pci->basic_info.manip = request.manipulator;
   pci->basic_info.start_fixed = false;
   pci->basic_info.use_time = false;
-//  pci->basic_info.convex_solver = optimizer;  // TODO: Fix this when port to trajopt_ifopt
+  //  pci->basic_info.convex_solver = optimizer;  // TODO: Fix this when port to trajopt_ifopt
 
   // Set trajopt seed
   assert(static_cast<long>(seed_states.size()) == pci->basic_info.n_steps);
@@ -350,7 +353,6 @@ trajopt::TrajOptProb DefaultProblemGenerator(const PlannerRequest request)
   std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles;
   std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profile;
   return DefaultProblemGenerator(request, plan_profiles, composite_profile);
-
 }
-}
+}  // namespace tesseract_planning
 #endif

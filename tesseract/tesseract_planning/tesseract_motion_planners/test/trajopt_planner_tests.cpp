@@ -582,7 +582,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
 }
 
 // This test checks that the terms are being added correctly for joint cnts
- TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -634,14 +634,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
       problem.getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
       problem.getConstraints())));
-  EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
   EXPECT_FALSE(
       (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
 }
 
 // This test checks that the terms are being added correctly for joint costs
- TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -659,7 +658,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   {
     // Specify a Joint Waypoint as the finish
     JointWaypoint wp = Eigen::VectorXd::Zero(7);
-    wp <<  0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
+    wp << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
     wp.joint_names = joint_names;
     PlanInstruction plan_f(wp, PlanInstructionType::FREESPACE, "TEST_PROFILE");
     program.push_back(plan_f);
@@ -670,7 +669,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
-  plan_profile->term_type = trajopt::TermType::TT_COST; // Everything associated with profile is now added as a cost
+  plan_profile->term_type = trajopt::TermType::TT_COST;  // Everything associated with profile is now added as a cost
 
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
@@ -694,10 +693,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
       problem.getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
       problem.getConstraints())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr,
-  trajopt::JointPosEqCost>(problem.getCosts()))); EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr,
-      trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
 }
 
 int main(int argc, char** argv)

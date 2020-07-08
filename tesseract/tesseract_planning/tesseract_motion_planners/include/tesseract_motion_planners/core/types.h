@@ -35,8 +35,8 @@ namespace tesseract_planning
 {
 struct PlannerRequest
 {
-  std::string name;                                      /**< @brief The name of the planner to use */
-  tesseract::Tesseract::ConstPtr tesseract;              /**< @brief Tesseract */
+  std::string name;                                    /**< @brief The name of the planner to use */
+  tesseract::Tesseract::ConstPtr tesseract;            /**< @brief Tesseract */
   tesseract_environment::EnvState::ConstPtr env_state; /**< @brief The start state to use for planning */
 
   std::string manipulator;
@@ -57,10 +57,11 @@ struct PlannerRequest
 struct PlannerResponse
 {
   CompositeInstruction results;
-  tesseract_common::StatusCode status;                               /**< @brief The status information */
+  tesseract_common::StatusCode status;                                     /**< @brief The status information */
   std::vector<std::reference_wrapper<Instruction>> succeeded_instructions; /**< @brief Waypoints for which the planner
                                                                         succeeded */
-  std::vector<std::reference_wrapper<Instruction>> failed_instructions; /**< @brief Waypoints for which the planner failed */
+  std::vector<std::reference_wrapper<Instruction>> failed_instructions;    /**< @brief Waypoints for which the planner
+                                                                              failed */
 };
 
 class PlannerConfig

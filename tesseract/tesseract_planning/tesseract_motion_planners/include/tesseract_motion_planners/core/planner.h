@@ -59,10 +59,9 @@ public:
    * @param verbose Flag for printing more detailed planning information
    * @return A code indicating the status of the planned trajectory
    */
-  virtual tesseract_common::StatusCode
-  solve(const PlannerRequest& request,
-        PlannerResponse& response,
-        bool verbose = false) = 0;
+  virtual tesseract_common::StatusCode solve(const PlannerRequest& request,
+                                             PlannerResponse& response,
+                                             bool verbose = false) = 0;
 
   /**
    * @brief If solve() is running, terminate the computation. Return false if termination not possible. No-op if
