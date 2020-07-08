@@ -34,15 +34,6 @@ struct TrajOptPlannerUniversalConfig : public TrajOptPlannerConfig
    */
   void processResults(const tesseract_common::JointTrajectory& trajectory);
 
-  /** @brief Tesseract object. ***REQUIRED*** */
-  tesseract::Tesseract::ConstPtr tesseract;
-
-  /** @brief Manipulator used for pathplanning ***REQUIRED*** */
-  std::string manipulator;
-
-  /** @brief The QP solver used in the SQP optimization routine */
-  sco::ModelType optimizer = sco::ModelType::AUTO_SOLVER;
-
   /**
    * @brief The available composite profiles
    *
@@ -59,18 +50,6 @@ struct TrajOptPlannerUniversalConfig : public TrajOptPlannerConfig
    * waypoint, corner distance waypoint, etc.
    */
   std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles;
-
-  /**
-   * @brief The program instruction
-   * This must containt a minimum of two move instruction the first move instruction is the start state
-   */
-  tesseract_planning::CompositeInstruction instructions;
-
-  /**
-   * @brief This should be a one to one match with the instructions where the PlanInstruction is replaced with a
-   * composite instruction of MoveInstructions.
-   */
-  tesseract_planning::CompositeInstruction seed;
 
 protected:
   std::vector<std::size_t> plan_instruction_indices_;

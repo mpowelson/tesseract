@@ -62,14 +62,7 @@ public:
   virtual tesseract_common::StatusCode
   solve(const PlannerRequest& request,
         PlannerResponse& response,
-        PostPlanCheckType collision_check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
         bool verbose = false) = 0;
-
-  /**
-   * @brief checks if the planner is configured for planning
-   * @return True if configured, false otherwise
-   */
-  virtual tesseract_common::StatusCode isConfigured() const = 0;
 
   /**
    * @brief If solve() is running, terminate the computation. Return false if termination not possible. No-op if

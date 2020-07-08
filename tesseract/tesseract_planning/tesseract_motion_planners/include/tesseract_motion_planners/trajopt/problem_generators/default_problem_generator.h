@@ -1,13 +1,13 @@
 /**
- * @file trajopt_planner_default_config.cpp
- * @brief A TrajOpt planner configuration class with default values suitable for most applications
+ * @file trajopt_planner.h
+ * @brief Tesseract ROS Trajopt planner
  *
- * @author Michael Ripperger
- * @date September 16, 2019
+ * @author Levi Armstrong
+ * @date April 18, 2018
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2019, Southwest Research Institute
+ * @copyright Copyright (c) 2017, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -23,29 +23,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_command_language/plan_instruction.h>
-#include <tesseract_command_language/move_instruction.h>
-#include <tesseract_command_language/cartesian_waypoint.h>
-#include <tesseract_command_language/joint_waypoint.h>
+#ifndef TESSERACT_MOTION_PLANNERS_DEFAULT_PROBLEM_GENERATOR_H
+#define TESSERACT_MOTION_PLANNERS_DEFAULT_PROBLEM_GENERATOR_H
 
-#include <tesseract_motion_planners/trajopt/trajopt_planner_universal_config.h>
-#include <tesseract_motion_planners/trajopt/trajopt_utils.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
-//#include <tesseract_motion_planners/trajopt/config/utils.h>
-#include <tesseract_motion_planners/core/utils.h>
+#include <trajopt/problem_description.hpp>
+#include <tesseract_command_language/command_language.h>
 
-namespace tesseract_planning
-{
-TrajOptPlannerUniversalConfig::TrajOptPlannerUniversalConfig(tesseract::Tesseract::ConstPtr tesseract_,
-                                                             std::string manipulator_)
-  : tesseract(std::move(tesseract_)), manipulator(std::move(manipulator_))
-{
-  plan_profiles["DEFAULT"] = std::make_shared<TrajOptDefaultPlanProfile>();
-  composite_profiles["DEFAULT"] = std::make_shared<TrajOptDefaultCompositeProfile>();
-}
-
-bool TrajOptPlannerUniversalConfig::generate()
+trajopt::TrajOptProb default_problem_generator(const PlannerRequest& request)
 {
   if (!checkUserInput())
     return false;
@@ -375,48 +359,4 @@ bool TrajOptPlannerUniversalConfig::generate()
   return (prob != nullptr);
 }
 
-bool TrajOptPlannerUniversalConfig::checkUserInput() const
-{
-  // Check that parameters are valid
-  if (tesseract == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: tesseract is a required parameter and has not been set");
-    return false;
-  }
-
-  // Check that parameters are valid
-  auto manipulators = tesseract->getFwdKinematicsManagerConst()->getAvailableFwdKinematicsManipulators();
-  if (std::find(manipulators.begin(), manipulators.end(), manipulator) == manipulators.end())
-  {
-    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: manipulator is a required parameter and is not found in "
-                            "the list of available manipulators");
-    return false;
-  }
-
-  if (instructions.empty())
-  {
-    CONSOLE_BRIDGE_logError("TrajOptPlannerUniversalConfig requires at least 2 instructions");
-    return false;
-  }
-
-  return true;
-}
-
-/** @brief This is used to process the results into the seed trajectory
- *
- * This is currently required because the base class is not aware of instruction
- *
- */
-void TrajOptPlannerUniversalConfig::processResults(const tesseract_common::JointTrajectory& trajectory)
-{
-  int index = 0;
-  for (const auto& plan_index : plan_instruction_indices_)
-  {
-    assert(seed[plan_index].isComposite());
-    auto* move_instructions = seed[plan_index].cast<CompositeInstruction>();
-    for (auto& instruction : *move_instructions)
-      instruction.cast<MoveInstruction>()->setPosition(trajectory.trajectory.row(index++));
-  }
-}
-
-}  // namespace tesseract_planning
+#endif

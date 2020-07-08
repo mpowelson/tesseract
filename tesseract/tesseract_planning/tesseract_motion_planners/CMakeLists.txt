@@ -31,9 +31,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt
-  src/trajopt/trajopt_planner_config.cpp
   src/trajopt/trajopt_motion_planner.cpp
-  src/trajopt/trajopt_planner_universal_config.cpp
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
   src/trajopt/profile/trajopt_default_composite_profile.cpp)

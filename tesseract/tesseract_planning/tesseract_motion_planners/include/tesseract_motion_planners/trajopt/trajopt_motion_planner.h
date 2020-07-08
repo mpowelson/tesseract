@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
-#include <tesseract_motion_planners/trajopt/trajopt_planner_config.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 
 namespace tesseract_planning
 {
@@ -50,15 +50,47 @@ public:
   TrajOptMotionPlanner(TrajOptMotionPlanner&&) = default;
   TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = default;
 
+  std::function<trajopt::TrajOptProb(const PlannerRequest& request)> problem_generator_;
+
   /**
-   * @brief Set the configuration for the planner
+   * @brief The available composite profiles
    *
-   * This must be called prior to calling solve.
-   *
-   * @param config The planners configuration
-   * @return True if successful otherwise false
+   * Composite instruction is a way to namespace or organize your planning problem. The composite instruction has a
+   * profile which is used for applying multy waypoint costs and constraints like joint smoothing, collision avoidance,
+   * and velocity smoothing.
    */
-  bool setConfiguration(TrajOptPlannerConfig::Ptr config);
+  std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profiles;
+
+  /**
+   * @brief The available plan profiles
+   *
+   * Plan instruction profiles are used to control waypoint specific information like fixed waypoint, toleranced
+   * waypoint, corner distance waypoint, etc.
+   */
+  std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles;
+
+  /** @brief Optimization parameters to be used (Optional) */
+  sco::BasicTrustRegionSQPParameters params;
+
+  /** @brief Callback functions called on each iteration of the optimization (Optional) */
+  std::vector<sco::Optimizer::Callback> callbacks;
+
+  /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
+   * to be considered valid in post checking of trajectory returned by trajopt.
+   *
+   * The resolution is equal to longest_valid_segment_fraction * state_space.getMaximumExtent()
+   *
+   * Note: The planner takes the conservative of either longest_valid_segment_fraction or longest_valid_segment_length.
+   */
+  double longest_valid_segment_fraction = 0.01;  // 1%
+
+  /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
+   * to be considered valid. If norm(state1 - state0) > longest_valid_segment_length.
+   *
+   * Note: This gets converted to longest_valid_segment_fraction.
+   *       longest_valid_segment_fraction = longest_valid_segment_length / state_space.getMaximumExtent()
+   */
+  double longest_valid_segment_length = 0.5;
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -70,21 +102,15 @@ public:
    */
   tesseract_common::StatusCode solve(const PlannerRequest& request,
                                      PlannerResponse& response,
-                                     PostPlanCheckType check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
                                      bool verbose = false) override;
+
+  bool checkUserInput(const PlannerRequest& request) const;
 
   bool terminate() override;
 
   void clear() override;
 
-  /**
-   * @brief checks whether the planner is properly configure for solving a motion plan
-   * @return True when it is configured correctly, false otherwise
-   */
-  tesseract_common::StatusCode isConfigured() const override;
-
 protected:
-  TrajOptPlannerConfig::Ptr config_;
   std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
 };
 
@@ -97,12 +123,9 @@ public:
 
   enum
   {
-    IsConfigured = 1,
     SolutionFound = 0,
-    IsNotConfigured = -1,
-    FailedToParseConfig = -2,
+    InvalidInput = -1,
     FailedToFindValidSolution = -3,
-    FoundValidSolutionInCollision = -4
   };
 
 private:
