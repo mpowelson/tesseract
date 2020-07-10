@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
 #include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
 #include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
+#include <tesseract_motion_planners/core/utils.h>
 
 namespace tesseract_planning
 {
@@ -79,8 +80,7 @@ bool checkGoalState(const ompl::base::ProblemDefinitionPtr& prob_def,
 
 /** @brief Construct a basic planner */
 OMPLMotionPlanner::OMPLMotionPlanner(std::string name)
-  : MotionPlanner(std::move(name))
-  , status_category_(std::make_shared<const OMPLMotionPlannerStatusCategory>(name_))
+  : MotionPlanner(std::move(name)), status_category_(std::make_shared<const OMPLMotionPlannerStatusCategory>(name_))
 {
 }
 
@@ -91,16 +91,16 @@ bool OMPLMotionPlanner::terminate()
 }
 
 tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& request,
-      PlannerResponse& response,
+                                                      PlannerResponse& response,
                                                       bool verbose)
 {
-//  tesseract_common::StatusCode config_status = isConfigured();
-//  if (!config_status)
-//  {
-//    response.status = config_status;
-//    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-//    return config_status;
-//  }
+  //  tesseract_common::StatusCode config_status = isConfigured();
+  //  if (!config_status)
+  //  {
+  //    response.status = config_status;
+  //    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
+  //    return config_status;
+  //  }
 
   std::vector<OMPLProblem::UPtr> prob = problem_generator(request, plan_profiles);
 
@@ -108,7 +108,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
   if (verbose)
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
-  // TODO: LEVI need to expand this to support multiple motion planns leveraging taskflow
+  // TODO: LEVI need to expand this to support multiple motion plans leveraging taskflow
   assert(prob.size() == 1);
   for (auto& p : prob)
   {
@@ -197,49 +197,33 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
       }
     }
 
-//    tesseract_common::TrajArray traj = p->getTrajectory();
+    // Get the results
+    tesseract_common::TrajArray trajectory = p->getTrajectory();
 
-//    assert(checkStartState(p->simple_setup->getProblemDefinition(), traj.row(0), p->extractor));
-//    assert(checkGoalState(p->simple_setup->getProblemDefinition(), traj.bottomRows(1).transpose(), p->extractor));
+    assert(checkStartState(p->simple_setup->getProblemDefinition(), trajectory.row(0), p->extractor));
+    assert(checkGoalState(p->simple_setup->getProblemDefinition(), trajectory.bottomRows(1).transpose(), p->extractor));
 
-    //  // Check and report collisions
-    //  continuous_contact_manager_->setContactDistanceThreshold(0.0);
+    // Flatten the results to make them easier to process
+    response.results = request.seed;
+    std::vector<std::reference_wrapper<Instruction>> results_flattened =
+        FlattenToPattern(response.results, request.instructions);
+    std::vector<std::reference_wrapper<const Instruction>> instructions_flattened = Flatten(request.instructions);
 
-//    bool valid = true;
-    //  {
-    //    auto env = prob.tesseract->getEnvironmentConst();
-    //    auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-    //        env->getSceneGraph(), prob.manip_fwd_kin->getActiveLinkNames(),
-    //        prob.env_state->link_transforms);
-    //    auto discrete_contact_manager = env->getDiscreteContactManager();
-    //    discrete_contact_manager->setActiveCollisionObjects(adj_map->getActiveLinkNames());
-    //    discrete_contact_manager->setContactDistanceThreshold(0.0);
+    // Loop over the flattened results and add them to response if the input was a plan instruction
+    Eigen::Index result_index = 0;
+    // TODO: Levi, change plan_index = 0 when add initial state to composite
+    for (std::size_t plan_index = 1; plan_index < results_flattened.size(); plan_index++)
+    {
+      if (instructions_flattened.at(plan_index).get().isPlan())
+      {
+        // This instruction corresponds to a composite. Set all results in that composite to the results
+        auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+        for (auto& instruction : *move_instructions)
+          instruction.cast<MoveInstruction>()->setPosition(trajectory.row(result_index++));
+      }
+    }
 
-    //    tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();
-
-    //    // TODO: LEVI
-    ////    validator_ = std::make_shared<TrajectoryValidator>(
-    ////        continuous_contact_manager_, discrete_contact_manager, prob.longest_valid_segment_length,
-    /// verbose); /    valid = validator_->trajectoryValid(traj, check_type, *state_solver, kin_->getJointNames());
-    //  }
-
-    //  // Set the contact distance back to original incase solve was called again.
-    ////  continuous_contact_manager_->setContactDistanceThreshold(prob.collision_safety_margin); TODO: LEVI
-
-    // Send response todo
-//    response.joint_trajectory.trajectory = traj;
-//    response.joint_trajectory.joint_names = p->manip_fwd_kin->getJointNames();
-//    if (!valid)
-//    {
-//      response.status = tesseract_common::StatusCode(
-//          OMPLMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
-//    }
-//    else
-//    {
-//      response.status = tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::SolutionFound, status_category_);
-//      CONSOLE_BRIDGE_logInform("%s, final trajectory is collision free", name_.c_str());
-//    }
-
+    response.status = tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::SolutionFound, status_category_);
     return response.status;
   }
 
@@ -255,13 +239,13 @@ void OMPLMotionPlanner::clear()
 bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& /*request*/)
 {
   // Maybe add validy check to problem?
-//  for (const auto& sub_prob : prob)
-//    if (!((sub_prob->simple_setup != nullptr) && (sub_prob->tesseract != nullptr) &&
-//          (sub_prob->manip_fwd_kin != nullptr) && (!sub_prob->planners.empty()) && (sub_prob->extractor != nullptr)))
-//      return false;
+  //  for (const auto& sub_prob : prob)
+  //    if (!((sub_prob->simple_setup != nullptr) && (sub_prob->tesseract != nullptr) &&
+  //          (sub_prob->manip_fwd_kin != nullptr) && (!sub_prob->planners.empty()) && (sub_prob->extractor !=
+  //          nullptr)))
+  //      return false;
 
   return true;
 }
-
 
 }  // namespace tesseract_planning

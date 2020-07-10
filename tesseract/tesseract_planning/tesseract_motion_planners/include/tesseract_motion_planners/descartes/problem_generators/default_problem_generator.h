@@ -34,8 +34,8 @@
 namespace tesseract_planning
 {
 template <typename FloatType>
-inline DescartesProblem<FloatType> DefaultDescartesProblemGenerator(const PlannerRequest& request,
-                                                                    const DescartesPlanProfileMap<FloatType>& plan_profiles)
+inline DescartesProblem<FloatType>
+DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesPlanProfileMap<FloatType>& plan_profiles)
 {
   DescartesProblem<FloatType> prob;
 

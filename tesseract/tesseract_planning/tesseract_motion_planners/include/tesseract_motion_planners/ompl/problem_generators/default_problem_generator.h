@@ -34,31 +34,62 @@
 
 namespace tesseract_planning
 {
-inline OMPLProblem::UPtr CreateSubProblem(const PlannerRequest& request)
+inline OMPLProblem::UPtr CreateOMPLSubProblem(const PlannerRequest& request,
+                                              tesseract_kinematics::ForwardKinematics::Ptr manip_fwd_kin,
+                                              tesseract_kinematics::InverseKinematics::Ptr manip_inv_kin,
+                                              std::vector<std::string> active_link_names)
 {
   auto sub_prob = std::make_unique<OMPLProblem>();
   sub_prob->tesseract = request.tesseract;
   sub_prob->env_state = request.env_state;
   sub_prob->state_solver = request.tesseract->getEnvironmentConst()->getStateSolver();
   sub_prob->state_solver->setState(request.env_state->joints);
-//  sub_prob->manip_fwd_kin = request.manip_fwd_kin_; // todo
-//  sub_prob->manip_inv_kin = request.manip_inv_kin_;
+  sub_prob->manip_fwd_kin = manip_fwd_kin;
+  sub_prob->manip_inv_kin = manip_inv_kin;
   sub_prob->contact_checker = request.tesseract->getEnvironmentConst()->getDiscreteContactManager();
   sub_prob->contact_checker->setCollisionObjectsTransform(request.env_state->link_transforms);
-//  sub_prob->contact_checker->setActiveCollisionObjects(active_link_names_);
+  sub_prob->contact_checker->setActiveCollisionObjects(active_link_names);
   return sub_prob;
 }
 
-inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerRequest& request, const OMPLPlanProfileMap& plan_profiles)
+inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerRequest& request,
+                                                                  const OMPLPlanProfileMap& plan_profiles)
 {
   std::vector<OMPLProblem::UPtr> problem;
   std::vector<std::string> active_link_names_;
-//  request.tesseract. TODO get acgtive link names
+  tesseract_kinematics::ForwardKinematics::Ptr manip_fwd_kin_;
+  tesseract_kinematics::InverseKinematics::Ptr manip_inv_kin_;
 
-//  // Process instructions
-//  if (!tesseract_kinematics::checkKinematics(manip_fwd_kin_, manip_inv_kin_))
-//    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL "
-//                            "(TrajOpt). Did you change the URDF recently?");
+  manip_fwd_kin_ = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(request.manipulator);
+  if (request.manipulator_ik_solver.empty())
+    manip_inv_kin_ = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(request.manipulator);
+  else
+    manip_inv_kin_ = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(
+        request.manipulator, request.manipulator_ik_solver);
+  if (!manip_fwd_kin_)
+  {
+    CONSOLE_BRIDGE_logError("No Forward Kinematics solver found");
+    return problem;
+  }
+  if (!manip_inv_kin_)
+  {
+    CONSOLE_BRIDGE_logError("No Inverse Kinematics solver found");
+    return problem;
+  }
+  // Process instructions
+  if (!tesseract_kinematics::checkKinematics(manip_fwd_kin_, manip_inv_kin_))
+    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL "
+                            "(TrajOpt). Did you change the URDF recently?");
+
+  // Get Active Link Names
+  {
+    std::vector<std::string> active_link_names = manip_inv_kin_->getActiveLinkNames();
+    auto adjacency_map =
+        std::make_shared<tesseract_environment::AdjacencyMap>(request.tesseract->getEnvironmentConst()->getSceneGraph(),
+                                                              active_link_names,
+                                                              request.env_state->link_transforms);
+    active_link_names_ = adjacency_map->getActiveLinkNames();
+  }
 
   // Check and make sure it does not contain any composite instruction
   for (const auto& instruction : request.instructions)
@@ -122,8 +153,8 @@ inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerR
             //                kinematics!");
 
             //              prev_pose =
-            //              this->problem.env_state->link_transforms.at(this->problem.manip_fwd_kin->getBaseLinkName()) *
-            //              prev_pose * plan_instruction->getTCP();
+            //              this->problem.env_state->link_transforms.at(this->problem.manip_fwd_kin->getBaseLinkName())
+            //              * prev_pose * plan_instruction->getTCP();
             //            }
             //            else
             //            {
@@ -234,7 +265,8 @@ inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerR
           else
           {
             /** @todo Should check that the joint names match the order of the manipulator */
-            OMPLProblem::UPtr sub_prob = CreateSubProblem(request);
+            OMPLProblem::UPtr sub_prob =
+                CreateOMPLSubProblem(request, manip_fwd_kin_, manip_inv_kin_, active_link_names_);
             cur_plan_profile->setup(*sub_prob);
             cur_plan_profile->applyGoalStates(*sub_prob, *cur_wp, *plan_instruction, active_link_names_, index);
             sub_prob->n_output_states = static_cast<int>(seed_composite->size());
@@ -278,7 +310,8 @@ inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerR
           }
           else
           {
-            OMPLProblem::UPtr sub_prob = CreateSubProblem(request);
+            OMPLProblem::UPtr sub_prob =
+                CreateOMPLSubProblem(request, manip_fwd_kin_, manip_inv_kin_, active_link_names_);
             sub_prob->n_output_states = static_cast<int>(seed_composite->size());
             cur_plan_profile->setup(*sub_prob);
             cur_plan_profile->applyGoalStates(*sub_prob, *cur_wp, *plan_instruction, active_link_names_, index);
@@ -329,5 +362,5 @@ inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerR
 
   return problem;
 }
-}
+}  // namespace tesseract_planning
 #endif

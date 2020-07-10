@@ -50,8 +50,7 @@ public:
   /** @brief Construct a planner */
   OMPLMotionPlanner(std::string name = "OMPL");
 
-  std::function<std::vector<OMPLProblem::UPtr>(const PlannerRequest&, const OMPLPlanProfileMap&)>
-      problem_generator;
+  std::function<std::vector<OMPLProblem::UPtr>(const PlannerRequest&, const OMPLPlanProfileMap&)> problem_generator;
 
   /**
    * @brief The available plan profiles
@@ -91,7 +90,6 @@ public:
   bool checkUserInput(const PlannerRequest& request);
 
 protected:
-
   /** @brief The planners status codes */
   std::shared_ptr<const OMPLMotionPlannerStatusCategory> status_category_;
 
