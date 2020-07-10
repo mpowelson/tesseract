@@ -80,7 +80,6 @@ bool checkGoalState(const ompl::base::ProblemDefinitionPtr& prob_def,
 /** @brief Construct a basic planner */
 OMPLMotionPlanner::OMPLMotionPlanner(std::string name)
   : MotionPlanner(std::move(name))
-  , config_(nullptr)
   , status_category_(std::make_shared<const OMPLMotionPlannerStatusCategory>(name_))
 {
 }
@@ -91,25 +90,27 @@ bool OMPLMotionPlanner::terminate()
   return false;
 }
 
-tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
-                                                      PostPlanCheckType /*check_type*/,
+tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& request,
+      PlannerResponse& response,
                                                       bool verbose)
 {
-  tesseract_common::StatusCode config_status = isConfigured();
-  if (!config_status)
-  {
-    response.status = config_status;
-    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-    return config_status;
-  }
+//  tesseract_common::StatusCode config_status = isConfigured();
+//  if (!config_status)
+//  {
+//    response.status = config_status;
+//    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
+//    return config_status;
+//  }
+
+  std::vector<OMPLProblem::UPtr> prob = problem_generator(request, plan_profiles);
 
   // If the verbose set the log level to debug.
   if (verbose)
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
   // TODO: LEVI need to expand this to support multiple motion planns leveraging taskflow
-  assert(config_->prob.size() == 1);
-  for (auto& p : config_->prob)
+  assert(prob.size() == 1);
+  for (auto& p : prob)
   {
     auto parallel_plan = std::make_shared<ompl::tools::ParallelPlan>(p->simple_setup->getProblemDefinition());
 
@@ -196,20 +197,20 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
       }
     }
 
-    tesseract_common::TrajArray traj = p->getTrajectory();
+//    tesseract_common::TrajArray traj = p->getTrajectory();
 
-    assert(checkStartState(p->simple_setup->getProblemDefinition(), traj.row(0), p->extractor));
-    assert(checkGoalState(p->simple_setup->getProblemDefinition(), traj.bottomRows(1).transpose(), p->extractor));
+//    assert(checkStartState(p->simple_setup->getProblemDefinition(), traj.row(0), p->extractor));
+//    assert(checkGoalState(p->simple_setup->getProblemDefinition(), traj.bottomRows(1).transpose(), p->extractor));
 
     //  // Check and report collisions
     //  continuous_contact_manager_->setContactDistanceThreshold(0.0);
 
-    bool valid = true;
+//    bool valid = true;
     //  {
-    //    auto env = config_->prob.tesseract->getEnvironmentConst();
+    //    auto env = prob.tesseract->getEnvironmentConst();
     //    auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-    //        env->getSceneGraph(), config_->prob.manip_fwd_kin->getActiveLinkNames(),
-    //        config_->prob.env_state->link_transforms);
+    //        env->getSceneGraph(), prob.manip_fwd_kin->getActiveLinkNames(),
+    //        prob.env_state->link_transforms);
     //    auto discrete_contact_manager = env->getDiscreteContactManager();
     //    discrete_contact_manager->setActiveCollisionObjects(adj_map->getActiveLinkNames());
     //    discrete_contact_manager->setContactDistanceThreshold(0.0);
@@ -218,26 +219,26 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
 
     //    // TODO: LEVI
     ////    validator_ = std::make_shared<TrajectoryValidator>(
-    ////        continuous_contact_manager_, discrete_contact_manager, config_->prob.longest_valid_segment_length,
+    ////        continuous_contact_manager_, discrete_contact_manager, prob.longest_valid_segment_length,
     /// verbose); /    valid = validator_->trajectoryValid(traj, check_type, *state_solver, kin_->getJointNames());
     //  }
 
     //  // Set the contact distance back to original incase solve was called again.
-    ////  continuous_contact_manager_->setContactDistanceThreshold(config_->prob.collision_safety_margin); TODO: LEVI
+    ////  continuous_contact_manager_->setContactDistanceThreshold(prob.collision_safety_margin); TODO: LEVI
 
-    // Send response
-    response.joint_trajectory.trajectory = traj;
-    response.joint_trajectory.joint_names = p->manip_fwd_kin->getJointNames();
-    if (!valid)
-    {
-      response.status = tesseract_common::StatusCode(
-          OMPLMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
-    }
-    else
-    {
-      response.status = tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::SolutionFound, status_category_);
-      CONSOLE_BRIDGE_logInform("%s, final trajectory is collision free", name_.c_str());
-    }
+    // Send response todo
+//    response.joint_trajectory.trajectory = traj;
+//    response.joint_trajectory.joint_names = p->manip_fwd_kin->getJointNames();
+//    if (!valid)
+//    {
+//      response.status = tesseract_common::StatusCode(
+//          OMPLMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
+//    }
+//    else
+//    {
+//      response.status = tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::SolutionFound, status_category_);
+//      CONSOLE_BRIDGE_logInform("%s, final trajectory is collision free", name_.c_str());
+//    }
 
     return response.status;
   }
@@ -247,49 +248,20 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
 
 void OMPLMotionPlanner::clear()
 {
-  request_ = PlannerRequest();
-  config_ = nullptr;
   continuous_contact_manager_ = nullptr;
   parallel_plan_ = nullptr;
 }
 
-tesseract_common::StatusCode OMPLMotionPlanner::isConfigured() const
+bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& /*request*/)
 {
-  if (config_ == nullptr)  // || continuous_contact_manager_ == nullptr)
-    return tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::ErrorIsNotConfigured, status_category_);
-
-  return tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::IsConfigured, status_category_);
-}
-
-bool OMPLMotionPlanner::setConfiguration(OMPLMotionPlannerConfig::Ptr config)
-{
-  // Reset state
-  clear();
-
-  config_ = std::move(config);
-  if (!config_->generate())
-  {
-    config_ = nullptr;
-    return false;
-  }
-
-  //  const tesseract_environment::Environment::ConstPtr& env = config_->prob.tesseract->getEnvironmentConst();
-  //  // kinematics objects does not know of every link affected by its motion so must compute adjacency map
-  //  // to determine all active links.
-  //  auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-  //      env->getSceneGraph(), config_->prob.manip_fwd_kin->getActiveLinkNames(),
-  //      config_->prob.env_state->link_transforms);
-
-  //  continuous_contact_manager_ = env->getContinuousContactManager();
-  //  continuous_contact_manager_->setActiveCollisionObjects(adj_map->getActiveLinkNames());
-  ////  continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin); TODO: LEVI
-
-  //  parallel_plan_ = std::make_shared<ompl::tools::ParallelPlan>(config_->prob.simple_setup->getProblemDefinition());
-
-  //  for (const auto& planner : config_->prob.planners)
-  //    parallel_plan_->addPlanner(planner->create(config_->prob.simple_setup->getSpaceInformation()));
+  // Maybe add validy check to problem?
+//  for (const auto& sub_prob : prob)
+//    if (!((sub_prob->simple_setup != nullptr) && (sub_prob->tesseract != nullptr) &&
+//          (sub_prob->manip_fwd_kin != nullptr) && (!sub_prob->planners.empty()) && (sub_prob->extractor != nullptr)))
+//      return false;
 
   return true;
 }
+
 
 }  // namespace tesseract_planning
