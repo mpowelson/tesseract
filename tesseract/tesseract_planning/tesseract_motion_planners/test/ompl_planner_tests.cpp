@@ -176,12 +176,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -228,11 +227,10 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   // Specify a start waypoint
   wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
-  plan_f0 = PlanInstruction(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a new program
   program = CompositeInstruction();
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -255,12 +253,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), static_cast<long>(ewp.size()));
 
   // Define Plan Instructions
-  plan_f0 = PlanInstruction(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   plan_f1 = PlanInstruction(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a new program
   program = CompositeInstruction();
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -307,12 +304,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   CartesianWaypoint wp2 = goal;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -401,12 +397,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed

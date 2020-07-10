@@ -139,12 +139,11 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   wp2.joint_names = joint_names;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -210,12 +209,11 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   wp2.joint_names = joint_names;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -284,12 +282,11 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -362,13 +359,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   wp2.joint_names = joint_names;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
+  plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -439,14 +435,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -517,14 +511,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -591,8 +583,22 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
+  // Specify a JointWaypoint as the start
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
+
+  // Specify a Joint Waypoint as the finish
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
+
+  // Define Plan Instructions
+  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
+  plan_f1.setWorkingFrame("base_link");
+
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
+  program.setStartWaypoint(wp1);
+  program.push_back(plan_f1);
 
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)

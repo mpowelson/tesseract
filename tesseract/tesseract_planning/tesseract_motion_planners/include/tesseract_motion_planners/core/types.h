@@ -35,33 +35,22 @@ namespace tesseract_planning
 {
 struct PlannerRequest
 {
-  std::string name;                                    /**< @brief The name of the planner to use */
-  tesseract::Tesseract::ConstPtr tesseract;            /**< @brief Tesseract */
-  tesseract_environment::EnvState::ConstPtr env_state; /**< @brief The start state to use for planning */
-
+  std::string name;                                      /**< @brief The name of the planner to use */
+  tesseract::Tesseract::ConstPtr tesseract;              /**< @brief Tesseract */
+  tesseract_environment::EnvState::ConstPtr start_state; /**< @brief The start state to use for planning */
+  CompositeInstruction instructions;                     /**< @brief The instructions to process */
+  CompositeInstruction solution;                         /**< @brief The solution to fill out */
   std::string manipulator;
   std::string manipulator_ik_solver;
-
-  /**
-   * @brief The program instruction
-   * This must containt a minimum of two move instruction the first move instruction is the start state
-   */
-  CompositeInstruction instructions;
-  /**
-   * @brief This should be a one to one match with the instructions where the PlanInstruction is replaced with a
-   * CompositeInstruction of MoveInstructions.
-   */
-  CompositeInstruction seed;
 };
 
 struct PlannerResponse
 {
-  CompositeInstruction results;
-  tesseract_common::StatusCode status;                                     /**< @brief The status information */
+  tesseract_common::StatusCode status; /**< @brief The status information */
+  CompositeInstruction solution;       /**< @brief solution */
   std::vector<std::reference_wrapper<Instruction>> succeeded_instructions; /**< @brief Waypoints for which the planner
                                                                         succeeded */
   std::vector<std::reference_wrapper<Instruction>> failed_instructions;    /**< @brief Waypoints for which the planner
-                                                                              failed */
 };
 
 }  // namespace tesseract_planning
