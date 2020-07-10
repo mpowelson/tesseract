@@ -39,7 +39,7 @@ struct PlannerRequest
   tesseract::Tesseract::ConstPtr tesseract;              /**< @brief Tesseract */
   tesseract_environment::EnvState::ConstPtr start_state; /**< @brief The start state to use for planning */
   CompositeInstruction instructions;                     /**< @brief The instructions to process */
-  CompositeInstruction solution;                         /**< @brief The solution to fill out */
+  CompositeInstruction seed;                         /**< @brief The solution to fill out */
   std::string manipulator;
   std::string manipulator_ik_solver;
 };
@@ -50,7 +50,7 @@ struct PlannerResponse
   CompositeInstruction solution;       /**< @brief solution */
   std::vector<std::reference_wrapper<Instruction>> succeeded_instructions; /**< @brief Waypoints for which the planner
                                                                         succeeded */
-  std::vector<std::reference_wrapper<Instruction>> failed_instructions;    /**< @brief Waypoints for which the planner
+  std::vector<std::reference_wrapper<Instruction>> failed_instructions;    /**< @brief Waypoints for which the planner */
 };
 
 }  // namespace tesseract_planning

@@ -41,13 +41,13 @@ inline OMPLProblem::UPtr CreateOMPLSubProblem(const PlannerRequest& request,
 {
   auto sub_prob = std::make_unique<OMPLProblem>();
   sub_prob->tesseract = request.tesseract;
-  sub_prob->env_state = request.env_state;
+  sub_prob->env_state = request.start_state;
   sub_prob->state_solver = request.tesseract->getEnvironmentConst()->getStateSolver();
-  sub_prob->state_solver->setState(request.env_state->joints);
+  sub_prob->state_solver->setState(request.start_state->joints);
   sub_prob->manip_fwd_kin = manip_fwd_kin;
   sub_prob->manip_inv_kin = manip_inv_kin;
   sub_prob->contact_checker = request.tesseract->getEnvironmentConst()->getDiscreteContactManager();
-  sub_prob->contact_checker->setCollisionObjectsTransform(request.env_state->link_transforms);
+  sub_prob->contact_checker->setCollisionObjectsTransform(request.start_state->link_transforms);
   sub_prob->contact_checker->setActiveCollisionObjects(active_link_names);
   return sub_prob;
 }
@@ -87,7 +87,7 @@ inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerR
     auto adjacency_map =
         std::make_shared<tesseract_environment::AdjacencyMap>(request.tesseract->getEnvironmentConst()->getSceneGraph(),
                                                               active_link_names,
-                                                              request.env_state->link_transforms);
+                                                              request.start_state->link_transforms);
     active_link_names_ = adjacency_map->getActiveLinkNames();
   }
 

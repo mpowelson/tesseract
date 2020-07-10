@@ -61,7 +61,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
     CONSOLE_BRIDGE_logError("No Inverse Kinematics solver found");
     return prob;
   }
-  prob.env_state = request.env_state;
+  prob.env_state = request.start_state;
   prob.tesseract = request.tesseract;
 
   // Process instructions
@@ -71,7 +71,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
   std::vector<std::string> active_link_names = prob.manip_inv_kin->getActiveLinkNames();
   auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      request.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, request.env_state->link_transforms);
+      request.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, request.start_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
   // Check and make sure it does not contain any composite instruction

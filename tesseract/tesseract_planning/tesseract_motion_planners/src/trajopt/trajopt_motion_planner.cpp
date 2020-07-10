@@ -130,7 +130,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
   tesseract_common::TrajArray trajectory = getTraj(opt.x(), problem->GetVars());
 
   // Flatten the results to make them easier to process
-  auto results_flattened = FlattenToPattern(response.results, request.instructions);
+  auto results_flattened = FlattenToPattern(response.solution, request.instructions);
   auto instructions_flattened = Flatten(request.instructions);
 
   // Loop over the flattened results and add them to response if the input was a plan instruction

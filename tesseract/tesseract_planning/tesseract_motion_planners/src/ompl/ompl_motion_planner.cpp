@@ -204,9 +204,9 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
     assert(checkGoalState(p->simple_setup->getProblemDefinition(), trajectory.bottomRows(1).transpose(), p->extractor));
 
     // Flatten the results to make them easier to process
-    response.results = request.seed;
+    response.solution = request.seed;
     std::vector<std::reference_wrapper<Instruction>> results_flattened =
-        FlattenToPattern(response.results, request.instructions);
+        FlattenToPattern(response.solution, request.instructions);
     std::vector<std::reference_wrapper<const Instruction>> instructions_flattened = Flatten(request.instructions);
 
     // Loop over the flattened results and add them to response if the input was a plan instruction
