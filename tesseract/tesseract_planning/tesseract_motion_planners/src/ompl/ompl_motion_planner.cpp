@@ -92,7 +92,7 @@ bool OMPLMotionPlanner::terminate()
 
 tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& request,
                                                       PlannerResponse& response,
-                                                      bool verbose)
+                                                      bool verbose) const
 {
   //  tesseract_common::StatusCode config_status = isConfigured();
   //  if (!config_status)
