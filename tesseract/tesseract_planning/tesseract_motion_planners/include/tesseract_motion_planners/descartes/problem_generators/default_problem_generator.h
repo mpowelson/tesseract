@@ -77,7 +77,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
   // Check and make sure it does not contain any composite instruction
   for (const auto& instruction : request.instructions)
-    if (instruction.isComposite())
+    if (isCompositeInstruction(instruction.getType()))
       throw std::runtime_error("Descartes planner does not support child composite instructions.");
 
   Waypoint start_waypoint = NullWaypoint();
@@ -99,12 +99,12 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
-    if (instruction.isPlan())
+    if (isPlanInstruction(instruction.getType()))
     {
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.template cast_const<PlanInstruction>();
 
-      assert(request.seed[i].isComposite());
+      assert(isCompositeInstruction(request.seed[i].getType()));
       const auto* seed_composite = request.seed[i].template cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 

@@ -37,14 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/types.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
-#include <tesseract_command_language/core/waypoint.h>
-#include <tesseract_command_language/cartesian_waypoint.h>
-#include <tesseract_command_language/joint_waypoint.h>
-#include <tesseract_command_language/waypoint_type.h>
-#include <tesseract_command_language/plan_instruction.h>
-#include <tesseract_command_language/move_instruction.h>
-#include <tesseract_command_language/composite_instruction.h>
-#include <tesseract_command_language/waypoint_type.h>
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/command_language_utils.h>
 
 namespace tesseract_planning
 {
@@ -178,7 +172,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
   bool found_plan_instruction = false;
   for (const auto& instruction : instructions)
   {
-    if (instruction.isPlan())
+    if (isPlanInstruction(instruction.getType()))
     {
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
       if (plan_instruction->isLinear())
@@ -436,7 +430,7 @@ inline void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flat
 {
   for (auto& i : composite)
   {
-    if (i.isComposite())
+    if (isCompositeInstruction(i.getType()))
       FlattenHelper(flattened, *(i.cast<CompositeInstruction>()));
     else
       flattened.emplace_back(i);
@@ -465,7 +459,7 @@ inline void FlattenHelper(std::vector<std::reference_wrapper<const Instruction>>
 {
   for (auto& i : composite)
   {
-    if (i.isComposite())
+    if (isCompositeInstruction(i.getType()))
       FlattenHelper(flattened, *(i.cast_const<CompositeInstruction>()));
     else
       flattened.emplace_back(i);
@@ -496,7 +490,7 @@ inline void FlattenToPatternHelper(std::vector<std::reference_wrapper<Instructio
 
   for (std::size_t i = 0; i < pattern.size(); i++)
   {
-    if (pattern.at(i).isComposite() && composite[i].isComposite())
+    if (isCompositeInstruction(pattern.at(i).getType()) && isCompositeInstruction(composite[i].getType()))
       FlattenToPatternHelper(
           flattened, *(composite[i].cast<CompositeInstruction>()), *pattern.at(i).cast_const<CompositeInstruction>());
     else

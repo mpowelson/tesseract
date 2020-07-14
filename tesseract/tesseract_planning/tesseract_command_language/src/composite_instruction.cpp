@@ -30,27 +30,6 @@ const Waypoint& CompositeInstruction::getStartWaypoint() const { return start_wa
 
 bool CompositeInstruction::hasStartWaypoint() const { return (!isNullWaypoint(start_waypoint_.getType())); }
 
-void CompositeInstruction::setEndWaypoint(Waypoint waypoint, bool process_child_composites)
-{
-  assert(!process_child_composites);
-  for (auto it = this->rbegin(); it != this->rend(); ++it)
-  {
-    if (isPlanInstruction(it->getType()))
-    {
-      it->cast<PlanInstruction>()->setWaypoint(waypoint);
-      return;
-    }
-  }
-
-  throw std::runtime_error("Failed to set end waypoint, composite instruction does not contain any plan instructions!");
-}
-
-bool CompositeInstruction::isComposite() const { return true; }
-
-bool CompositeInstruction::isPlan() const { return false; }
-
-bool CompositeInstruction::isMove() const { return false; }
-
 void CompositeInstruction::print(std::string prefix) const
 {
   std::cout << prefix + "Composite Instruction, Description: " << getDescription() << std::endl;
@@ -58,24 +37,6 @@ void CompositeInstruction::print(std::string prefix) const
   for (const auto& i : *this)
     i.print(prefix + "  ");
   std::cout << prefix + "}" << std::endl;
-}
-
-CompositeInstruction CompositeInstruction::flatten() const
-{
-  CompositeInstruction flattened;
-  flattenHelper(flattened, *this);
-  return flattened;
-}
-
-void CompositeInstruction::flattenHelper(CompositeInstruction& flattened, const CompositeInstruction& composite) const
-{
-  for (const auto& i : composite)
-  {
-    if (i.isComposite())
-      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()));
-    else
-      flattened.push_back(i);
-  }
 }
 
 }  // namespace tesseract_planning

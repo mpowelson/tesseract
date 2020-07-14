@@ -211,12 +211,12 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
 
     // Loop over the flattened results and add them to response if the input was a plan instruction
     Eigen::Index result_index = 0;
-    for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
+    for (auto& instruction : results_flattened)
     {
-      if (instructions_flattened.at(plan_index).get().isPlan())
+      if (isPlanInstruction(instruction.get().getType()))
       {
         // This instruction corresponds to a composite. Set all results in that composite to the results
-        auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+        auto* move_instructions = instruction.get().cast<CompositeInstruction>();
         for (auto& instruction : *move_instructions)
           instruction.cast<MoveInstruction>()->setPosition(trajectory.row(result_index++));
       }

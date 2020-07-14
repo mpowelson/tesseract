@@ -137,7 +137,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
   Eigen::Index result_index = 0;
   for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
-    if (instructions_flattened.at(plan_index).get().isPlan())
+    if (isPlanInstruction(instructions_flattened.at(plan_index).get().getType()))
     {
       // This instruction corresponds to a composite. Set all results in that composite to the results
       auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();

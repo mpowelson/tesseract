@@ -55,7 +55,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
 
   // Check and make sure it does not contain any composite instruction
   for (const auto& instruction : request.instructions)
-    if (instruction.isComposite())
+    if (isCompositeInstruction(instruction.getType()))
       throw std::runtime_error("Trajopt planner does not support child composite instructions.");
 
   // Get kinematics information
@@ -87,12 +87,12 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
-    if (instruction.isPlan())
+    if (isPlanInstruction(instruction.getType()))
     {
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
 
-      assert(request.seed[i].isComposite());
+      assert(isCompositeInstruction(request.seed[i].getType()));
       const auto* seed_composite = request.seed[i].cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
@@ -115,7 +115,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
         --interpolate_cnt;
 
         // Add start seed state
-        assert(seed_composite->at(0).isMove());
+        assert(isMoveInstruction(seed_composite->at(0).getType()));
         const auto* seed_instruction = seed_composite->at(0).cast_const<tesseract_planning::MoveInstruction>();
         seed_states.push_back(seed_instruction->getPosition());
 
@@ -172,7 +172,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
             cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
 
             // Add seed state
-            assert(seed_composite->at(p - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(p - seed_shift_index).getType()));
             const auto* seed_instruction =
                 seed_composite->at(p - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -184,7 +184,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back().getType()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
 
@@ -226,7 +226,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
             cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
 
             // Add seed state
-            assert(seed_composite->at(p - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(p - seed_shift_index).getType()));
             const auto* seed_instruction =
                 seed_composite->at(p - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -238,7 +238,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back().getType()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
 
@@ -259,7 +259,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           for (std::size_t s = 1; s < static_cast<std::size_t>(interpolate_cnt - 1); ++s)
           {
             // Add seed state
-            assert(seed_composite->at(s - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(s - seed_shift_index).getType()));
             const auto* seed_instruction =
                 seed_composite->at(s - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -275,7 +275,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           fixed_steps.push_back(index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back().getType()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
         }
@@ -287,7 +287,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           for (std::size_t s = 1; s < static_cast<std::size_t>(interpolate_cnt - 1); ++s)
           {
             // Add seed state
-            assert(seed_composite->at(s - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(s - seed_shift_index).getType()));
             const auto* seed_instruction =
                 seed_composite->at(s - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -303,7 +303,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           fixed_steps.push_back(index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back().getType()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
         }
