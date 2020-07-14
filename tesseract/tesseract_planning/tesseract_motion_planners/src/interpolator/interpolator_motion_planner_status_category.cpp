@@ -44,29 +44,17 @@ std::string InterpolatorMotionPlannerStatusCategory::message(int code) const
 {
   switch (code)
   {
-    case IsConfigured:
-    {
-      return "Is Configured";
-    }
     case SolutionFound:
     {
       return "Found valid solution";
     }
-    case ErrorIsNotConfigured:
+    case InvalidInput:
     {
-      return "Planner is not configured, must call setConfiguration prior to calling solve.";
-    }
-    case ErrorFailedToParseConfig:
-    {
-      return "Failed to parse config data";
+      return "Invalid planner input";
     }
     case ErrorFailedToFindValidSolution:
     {
       return "Failed to find valid solution";
-    }
-    case ErrorFoundValidSolutionInCollision:
-    {
-      return "Found valid solution, but is in collision";
     }
     default:
     {

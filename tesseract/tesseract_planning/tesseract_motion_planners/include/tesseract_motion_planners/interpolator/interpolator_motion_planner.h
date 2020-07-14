@@ -2,12 +2,13 @@
  * @file Interpolator_motion_planner.h
  * @brief Tesseract Interpolator motion planner.
  *
+ * @author Matthew Powelson
  * @author Levi Armstrong
- * @date April 18, 2018
+ * @date July 13, 2020
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -33,8 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
-#include <tesseract_motion_planners/core/waypoint.h>
-#include <tesseract_motion_planners/interpolator/config/interpolator_planner_config.h>
+#include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/interpolator/interpolator_motion_planner_status_category.h>
 
 namespace tesseract_planning
@@ -49,47 +49,33 @@ public:
   InterpolatorMotionPlanner(std::string name = "Interpolator");
 
   /**
-   * @brief Set the configuration for the planner
-   *
-   * This must be called prior to calling solve.
-   *
-   * @param config The planners configuration
-   * @return True if successful otherwise false
-   */
-  bool setConfiguration(InterpolatorPlannerConfig::Ptr config);
-
-  /**
    * @brief Sets up the Interpolator problem then solves. It is intended to simplify setting up
    * and solving freespace motion problems.
+   * @param request The planning request
    * @param response The results of Interpolator.
-   * @param check_type The type of validation check to be performed on the planned trajectory
    * @param verbose Flag for printing more detailed planning information
    * @return true if valid solution was found
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response,
-                                     PostPlanCheckType check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
-                                     bool verbose = false) override;
+  tesseract_common::StatusCode solve(const PlannerRequest& request,
+                                     PlannerResponse& response,
+                                     bool verbose = false) const override;
 
   bool terminate() override;
 
   void clear() override;
 
-  /**
-   * @brief checks whether the planner is properly configure for solving a motion plan
-   * @return True when it is configured correctly, false otherwise
-   */
-  tesseract_common::StatusCode isConfigured() const override;
+  bool checkUserInput(const PlannerRequest& request) const;
 
 protected:
-  PostPlanCheckType check_type_;
+  bool processComposite(const CompositeInstruction& instructions,
+                        CompositeInstruction& results,
+                        const tesseract_kinematics::InverseKinematics::Ptr& inv_kin,
+                        const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin);
 
-  /** @brief The Interpolator planner planner */
-  typename InterpolatorPlannerConfig::Ptr config_;
-
-  /** @brief The planners status codes */
-  std::shared_ptr<const InterpolatorMotionPlannerStatusCategory> status_category_;
+      /** @brief The planners status codes */
+      std::shared_ptr<const InterpolatorMotionPlannerStatusCategory> status_category_;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_Interpolator_MOTION_PLANNER_H

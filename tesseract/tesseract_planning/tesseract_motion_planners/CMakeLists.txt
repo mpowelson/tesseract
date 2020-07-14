@@ -29,6 +29,21 @@ target_include_directories(${PROJECT_NAME}_core INTERFACE
 target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
     ${EIGEN3_INCLUDE_DIRS})
 
+# Interpolator Planner
+add_library(${PROJECT_NAME}_interpolator
+  src/interpolator/interpolator_motion_planner.cpp
+  src/interpolator/interpolator_motion_planner_status_category.cpp
+)
+target_link_libraries(${PROJECT_NAME}_interpolator PUBLIC ${PROJECT_NAME}_core)
+tesseract_target_compile_options(${PROJECT_NAME}_interpolator PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_interpolator)
+tesseract_code_coverage(${PROJECT_NAME}_interpolator ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_include_directories(${PROJECT_NAME}_interpolator PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_interpolator SYSTEM PUBLIC
+        ${EIGEN3_INCLUDE_DIRS})
+
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt
   src/trajopt/trajopt_motion_planner.cpp
@@ -94,9 +109,10 @@ target_include_directories(${PROJECT_NAME}_descartes PUBLIC
     "$<INSTALL_INTERFACE:include>")
 
 tesseract_configure_package(${PROJECT_NAME}_core
-                            ${PROJECT_NAME}_trajopt
-                            ${PROJECT_NAME}_ompl
                             ${PROJECT_NAME}_descartes
+                            ${PROJECT_NAME}_interpolator
+                            ${PROJECT_NAME}_ompl
+                            ${PROJECT_NAME}_trajopt
                             )
 
 # Mark cpp header files for installation

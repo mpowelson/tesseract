@@ -47,7 +47,6 @@ using namespace tesseract_planning;
 /** @brief Construct a basic planner */
 InterpolatorMotionPlanner::InterpolatorMotionPlanner(std::string name)
   : MotionPlanner(std::move(name))
-  , config_(nullptr)
   , status_category_(std::make_shared<const InterpolatorMotionPlannerStatusCategory>(name_))
 {
 }
@@ -59,255 +58,353 @@ bool InterpolatorMotionPlanner::terminate()
 }
 
 tesseract_common::StatusCode
-InterpolatorMotionPlanner::solve(PlannerResponse& response,
-                                                            PostPlanCheckType check_type,
-                                                            bool verbose)
+InterpolatorMotionPlanner::solve(const PlannerRequest& request,
+                                 PlannerResponse& response,
+                                 bool verbose) const
 {
-  // Check that the planner is configured
-  tesseract_common::StatusCode config_status = isConfigured();
-  if (!config_status)
+  // Check the planner input
+  if (!checkUserInput(request))
   {
-    response.status = config_status;
+    response.status = tesseract_common::StatusCode(InterpolatorMotionPlannerStatusCategory::InvalidInput, status_category_);
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-    return config_status;
+    return response.status;
   }
 
   // If the verbose set the log level to debug.
   if (verbose)
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
-  // this planner interpolates b/n each instruction, so flatten them for convenience
-  const std::vector<std::reference_wrapper<Instruction>> flat_instr = Flatten(config_->instructions);
-  std::vector<std::reference_wrapper<Instruction>> flat_seed = FlattenToPattern(config_->seed, config_->instructions);
-  std::vector<std::reference_wrapper<Instruction>> flat_seed_copy = flat_seed;
-
-//  if (flat_instr.size() != flat_seed_copy.size())
-//  {
-//    CONSOLE_BRIDGE_logError(
-//        "Invalid Planner Input. Instruction size: %s , Seed size: %s", flat_instr.size(), flat_seed_copy.size());
-//    return tesseract_common::StatusCode(InterpolatorMotionPlannerStatusCategory::ErrorFailedToParseConfig,
-//                                        status_category_);
-//  }
-
-  // Loop over all instructions and interpolate
-  for (std::size_t i = 0; i < flat_instr.size() - 1; i++)
+  // Setup (may go in problem generator)``
+  tesseract_kinematics::InverseKinematics::Ptr inv_kin;
+  tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(request.manipulator);
+  if (request.manipulator_ik_solver.empty())
+    inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(request.manipulator);
+  else
+    inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(
+        request.manipulator, request.manipulator_ik_solver);
+  if (!fwd_kin)
   {
-    // Eventually we might want to be able to skip other instructions, but for now just error
-    assert(flat_instr[i].get().getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
-    assert(flat_instr[i + 1].get().getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
-
-    // Convert to plan instructions
-    const auto* plan_instruction_1 = flat_instr[i].get().cast_const<PlanInstruction>();
-    const tesseract_planning::Waypoint& wp_1 = plan_instruction_1->getWaypoint();
-    const auto* plan_instruction_2 = flat_instr[i + 1].get().cast_const<PlanInstruction>();
-    const tesseract_planning::Waypoint& wp_2 = plan_instruction_2->getWaypoint();
-
-    // MoveJ
-    if (plan_instruction_2->isFreespace())
-    {
-      // Convert the waypoints to joint waypoints and interpolate
-      Eigen::MatrixXd interpolated;
-      if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT) &&
-          wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT))
-      {
-        auto joint_1 = tesseract_planning::toJointWaypoint(
-              wp_1, config_->tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator"), Eigen::VectorXd::Zero(7));
-        auto joint_2 = tesseract_planning::toJointWaypoint(
-              wp_2, config_->tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator"), Eigen::VectorXd::Zero(7));
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        interpolated = interpolate(joint_1, joint_2, size);
-      }
-      else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT) &&
-               wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT))
-      {
-        auto joint_1 = wp_1.cast_const<tesseract_planning::JointWaypoint>();
-        auto joint_2 = tesseract_planning::toJointWaypoint(
-              wp_2, config_->tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator"), Eigen::VectorXd::Zero(7));
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        interpolated = interpolate(*joint_1, joint_2, size);
-      }
-      else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT) &&
-               wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
-      {
-        auto joint_1 = tesseract_planning::toJointWaypoint(
-              wp_1, config_->tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator"), Eigen::VectorXd::Zero(7));
-        auto joint_2 = wp_2.cast_const<tesseract_planning::JointWaypoint>();
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        interpolated = interpolate(joint_1, *joint_2, size);
-      }
-      else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT) &&
-               wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
-      {
-        auto joint_1 = wp_1.cast_const<tesseract_planning::JointWaypoint>();
-        auto joint_2 = wp_2.cast_const<tesseract_planning::JointWaypoint>();
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        interpolated = interpolate(*joint_1, *joint_2, size);
-      }
-      else
-      {
-        CONSOLE_BRIDGE_logWarn("Unsupported waypoint type");
-      }
-
-      // Write the results into the seed
-      std::cout << "Writing results to seed" << std::endl;
-      flat_seed_copy[i + 1].get().print();
-      // The first value goes in the last instruction of the previous step.
-      {
-        tesseract_planning::JointWaypoint move_wp(interpolated.col(0));
-        tesseract_planning::MoveInstruction move_instruction(move_wp, MoveInstructionType::FREESPACE);
-        flat_seed_copy[i].get().cast<CompositeInstruction>()->back() = move_instruction;
-      }
-      // All the rest go in this step
-      for (Eigen::Index j = 1; j < interpolated.cols(); j++)
-      {
-        tesseract_planning::JointWaypoint move_wp(interpolated.col(j));
-        tesseract_planning::MoveInstruction move_instruction(move_wp, MoveInstructionType::FREESPACE);
-        flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->at(static_cast<std::size_t>(j - 1)) = move_instruction;
-      }
-      std::cout << "Interpolated:\n" << interpolated << std::endl;
-      std::cout << "flat_seed_copy:" << std::endl;
-      for (auto& instr : flat_seed_copy)
-      {
-        for (auto& instr2 : *instr.get().cast<CompositeInstruction>())
-          std::cout << instr2.cast<MoveInstruction>()->getWaypoint().cast_const<JointWaypoint>()->transpose() << std::endl;
-      }
-    }
-    // MoveL
-    else if (plan_instruction_2->isLinear())
-    {
-      // Convert the waypoints to cartesian waypoints and interpolate
-      tesseract_common::VectorIsometry3d eigen_vec;
-      if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT) &&
-          wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT))
-      {
-        auto cart_1 = wp_1.cast_const<tesseract_planning::CartesianWaypoint>();
-        auto cart_2 = wp_2.cast_const<tesseract_planning::CartesianWaypoint>();
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        eigen_vec = interpolate(*cart_1, *cart_2, size);
-      }
-      else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT) &&
-               wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT))
-      {
-        auto cart_1 = tesseract_planning::toCartesianWaypoint(
-            wp_1, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
-        auto cart_2 = wp_2.cast_const<tesseract_planning::CartesianWaypoint>();
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        eigen_vec = interpolate(cart_1, *cart_2, size);
-      }
-      else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::CARTESIAN_WAYPOINT) &&
-               wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
-      {
-        auto cart_1 = wp_1.cast_const<tesseract_planning::CartesianWaypoint>();
-        auto cart_2 = tesseract_planning::toCartesianWaypoint(
-            wp_2, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        eigen_vec = interpolate(*cart_1, cart_2, size);
-      }
-      else if (wp_1.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT) &&
-               wp_2.getType() == static_cast<int>(tesseract_planning::WaypointType::JOINT_WAYPOINT))
-      {
-        auto cart_1 = tesseract_planning::toCartesianWaypoint(
-            wp_1, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
-        auto cart_2 = tesseract_planning::toCartesianWaypoint(
-            wp_2, config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
-        int size = static_cast<int>(flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->size());
-        eigen_vec = interpolate(cart_1, cart_2, size);
-      }
-      else
-      {
-        CONSOLE_BRIDGE_logWarn("Unsupported waypoint type");
-      }
-
-      // Write the results into the seed
-      for (std::size_t j = 0; j < eigen_vec.size(); j++)
-      {
-        tesseract_planning::CartesianWaypoint move_wp(eigen_vec[j]);
-        tesseract_planning::MoveInstruction move_instruction(move_wp, MoveInstructionType::LINEAR);
-        flat_seed_copy[i + 1].get().cast<CompositeInstruction>()->at(j) = move_instruction;
-      }
-    }
-    // Not MoveJ or MoveL
-    else
-    {
-      CONSOLE_BRIDGE_logWarn("Unsupported Plan Type. Must be linear or freespace");
-    }
+    response.status = tesseract_common::StatusCode(InterpolatorMotionPlannerStatusCategory::InvalidInput, status_category_);
+    CONSOLE_BRIDGE_logError("No Forward Kinematics solver found");
+    return response.status;
+  }
+  if (!inv_kin)
+  {
+    response.status = tesseract_common::StatusCode(InterpolatorMotionPlannerStatusCategory::InvalidInput, status_category_);
+    CONSOLE_BRIDGE_logError("No Inverse Kinematics solver found");
+    return response.status;
   }
 
-  bool valid = true;
-  // Check if the results are valid
-  if (config_->collision_check)
+
+  // Begin planning
+
+
+  // This planner interpolates b/n each instruction, so flatten them for convenience
+  const std::vector<std::reference_wrapper<const Instruction>> flat_instr = Flatten(request.instructions);
+  response.results = request.seed;
+  std::vector<std::reference_wrapper<Instruction>> flat_results = FlattenToPattern(response.results, request.instructions);
+
+
+
+
+  //TODO: make interpolateComposite helper. Then call that recursively (to handle the start waypoint below)
+
+  int cartesian_segments = 10; // TODO Replace with size of seed
+  int freespace_segments = 10;
+
+
+  CompositeInstruction seed;
+  Eigen::VectorXd current_jv = request.env_state->getJointValues(fwd_kin->getJointNames());
+  Eigen::Isometry3d world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
+
+  Waypoint start_waypoint = NullWaypoint();
+  if (request.instructions.hasStartWaypoint())
   {
-    std::vector<tesseract_collision::ContactResultMap> collisions;
-    tesseract_environment::StateSolver::Ptr state_solver = config_->tesseract->getEnvironmentConst()->getStateSolver();
-    tesseract_collision::ContinuousContactManager::Ptr continuous_manager =
-        config_->tesseract->getEnvironmentConst()->getContinuousContactManager();
-    tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-        config_->tesseract->getEnvironmentConst()->getSceneGraph(),
-        config_->tesseract->getEnvironmentConst()->getActiveLinkNames(),
-        config_->tesseract->getEnvironmentConst()->getCurrentState()->link_transforms);
-
-    validator_ =
-        std::make_shared<TrajectoryValidator>(config_->tesseract->getEnvironmentConst()->getContinuousContactManager(),
-                                              config_->tesseract->getEnvironmentConst()->getDiscreteContactManager(),
-                                              config_->longest_valid_segment_length_,
-                                              verbose);
-
-    // Convert to TrajArray
-    // Fix this
-    tesseract_common::TrajArray traj(flat_seed_copy.size(),
-                                     flat_seed_copy[0].get().cast_const<MoveInstruction>()->getPosition().size());
-    for (std::size_t index = 0; index < flat_seed_copy.size(); index++)
-    {
-      traj.row(static_cast<Eigen::Index>(index)) =
-          flat_seed_copy[index].get().cast_const<MoveInstruction>()->getPosition().transpose();
-    }
-
-    valid = validator_->trajectoryValid(
-        traj,
-        check_type,
-        *state_solver,
-        config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames());
-  }
-
-  // If valid, store the results and return true
-  if (!valid)
-  {
-    response.status = tesseract_common::StatusCode(
-        InterpolatorMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
+    start_waypoint = request.instructions.getStartWaypoint();
   }
   else
   {
-    response.status =
-        tesseract_common::StatusCode(InterpolatorMotionPlannerStatusCategory::SolutionFound, status_category_);
-    CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
-    // Copy results into the original seed
-    for (std::size_t index = 0; index < flat_seed.size(); index++)
-      flat_seed[index] = flat_seed_copy[index];
+    JointWaypoint temp(current_jv);
+    temp.joint_names = fwd_kin->getJointNames();
+    start_waypoint = temp;
   }
+
+  bool found_plan_instruction = false;
+  for (const auto& instruction : request.instructions)
+  {
+    if (instruction.isPlan())
+    {
+      const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
+      if (plan_instruction->isLinear())
+      {
+        CompositeInstruction composite;
+
+        bool is_cwp1 = isCartesianWaypoint(start_waypoint.getType());
+        bool is_jwp1 = isJointWaypoint(start_waypoint.getType());
+        bool is_cwp2 = isCartesianWaypoint(plan_instruction->getWaypoint().getType());
+        bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint().getType());
+        if (!found_plan_instruction)
+        {
+          tesseract_planning::MoveInstruction move_instruction(start_waypoint, MoveInstructionType::LINEAR);
+
+          if (is_jwp1)
+            move_instruction.setPosition(*(start_waypoint.cast_const<JointWaypoint>()));
+          else
+            move_instruction.setPosition(current_jv);
+
+          move_instruction.setTCP(plan_instruction->getTCP());
+          move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+          move_instruction.setDescription(plan_instruction->getDescription());
+          composite.push_back(move_instruction);
+        }
+
+        assert(is_cwp1 || is_jwp1);
+        assert(is_cwp2 || is_jwp2);
+
+        if (is_cwp1 && is_cwp2)
+        {
+          // If both are cartesian it will cartesian interpolate and use the current state as the seed.
+          const auto* pre_cwp = start_waypoint.cast_const<CartesianWaypoint>();
+          const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
+
+          tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, *cur_cwp, cartesian_segments);
+          for (std::size_t p = 1; p < poses.size(); ++p)
+          {
+            tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                 MoveInstructionType::LINEAR);
+            move_instruction.setPosition(current_jv);
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else if (is_cwp1 && is_jwp2)
+        {
+          // If one is cartesian and the other is a joint waypoint it will calculate the forward kinematics
+          // then cartesian interpolate and set the seed as the provided joint_waypoint.
+          const auto* pre_cwp = start_waypoint.cast_const<CartesianWaypoint>();
+          const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+          Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+          if (!fwd_kin->calcFwdKin(p2, *cur_jwp))
+            throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+          p2 = world_to_base * p2 * plan_instruction->getTCP();
+          tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, p2, cartesian_segments);
+          for (std::size_t p = 1; p < poses.size(); ++p)
+          {
+            tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                 MoveInstructionType::LINEAR);
+            move_instruction.setPosition(*cur_jwp);
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else if (is_cwp2 && is_jwp1)
+        {
+          // If one is cartesian and the other is a joint waypoint it will calculate the forward kinematics
+          // then cartesian interpolate and set the seed as the provided joint_waypoint.
+          const auto* pre_jwp = start_waypoint.cast_const<JointWaypoint>();
+          const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
+
+          Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+          if (!fwd_kin->calcFwdKin(p1, *pre_jwp))
+            throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+          p1 = world_to_base * p1 * plan_instruction->getTCP();
+          tesseract_common::VectorIsometry3d poses = interpolate(p1, *cur_cwp, cartesian_segments);
+          for (std::size_t p = 1; p < poses.size(); ++p)
+          {
+            tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                 MoveInstructionType::LINEAR);
+            move_instruction.setPosition(*pre_jwp);
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else if (is_jwp1 && is_jwp2)
+        {
+          // If both are joint waypoints it will calculate the forward kinematics for both then cartesian interpolate
+          // and set the seed using joint interpolation between the two.
+          const auto* pre_jwp = start_waypoint.cast_const<JointWaypoint>();
+          const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+          Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+          if (!fwd_kin->calcFwdKin(p1, *pre_jwp))
+            throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+          p1 = world_to_base * p1 * plan_instruction->getTCP();
+
+          Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+          if (!fwd_kin->calcFwdKin(p2, *cur_jwp))
+            throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+          p2 = world_to_base * p2 * plan_instruction->getTCP();
+          tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, cartesian_segments);
+          Eigen::MatrixXd joint_poses = interpolate(*pre_jwp, *cur_jwp, cartesian_segments);
+          for (std::size_t p = 1; p < poses.size(); ++p)
+          {
+            tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                 MoveInstructionType::LINEAR);
+            move_instruction.setPosition(joint_poses.col(static_cast<long>(p)));
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else
+        {
+          throw std::runtime_error("tesseract_planning::InterpolatorPlanner: unsupported waypoints provided!");
+        }
+
+        seed.push_back(composite);
+      }
+      else if (plan_instruction->isFreespace())
+      {
+        CompositeInstruction composite;
+
+        bool is_cwp1 = isCartesianWaypoint(start_waypoint.getType());
+        bool is_jwp1 = isJointWaypoint(start_waypoint.getType());
+        bool is_cwp2 = isCartesianWaypoint(plan_instruction->getWaypoint().getType());
+        bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint().getType());
+        if (!found_plan_instruction)
+        {
+          tesseract_planning::MoveInstruction move_instruction(start_waypoint, MoveInstructionType::FREESPACE);
+
+          if (is_jwp1)
+            move_instruction.setPosition(*(start_waypoint.cast_const<JointWaypoint>()));
+          else
+            move_instruction.setPosition(current_jv);
+
+          move_instruction.setTCP(plan_instruction->getTCP());
+          move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+          move_instruction.setDescription(plan_instruction->getDescription());
+          composite.push_back(move_instruction);
+        }
+
+        assert(is_cwp1 || is_jwp1);
+        assert(is_cwp2 || is_jwp2);
+
+        if (is_jwp1 && is_jwp2)
+        {
+          const auto* pre_cwp = start_waypoint.cast_const<JointWaypoint>();
+          const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+          Eigen::MatrixXd states = interpolate(*pre_cwp, *cur_cwp, freespace_segments);
+          for (long i = 1; i < states.cols(); ++i)
+          {
+            tesseract_planning::MoveInstruction move_instruction(JointWaypoint(states.col(i)),
+                                                                 MoveInstructionType::FREESPACE);
+            move_instruction.setPosition(states.col(i));
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else if (is_cwp1 && is_jwp2)
+        {
+          const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+          for (long i = 1; i < freespace_segments + 1; ++i)
+          {
+            tesseract_planning::MoveInstruction move_instruction(*cur_jwp, MoveInstructionType::FREESPACE);
+            move_instruction.setPosition(*cur_jwp);
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else if (is_cwp2 && is_jwp1)
+        {
+          const auto* pre_jwp = start_waypoint.cast_const<JointWaypoint>();
+
+          for (long i = 1; i < freespace_segments + 1; ++i)
+          {
+            tesseract_planning::MoveInstruction move_instruction(*pre_jwp, MoveInstructionType::FREESPACE);
+            move_instruction.setPosition(*pre_jwp);
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else if (is_cwp1 && is_cwp2)
+        {
+          for (long i = 1; i < freespace_segments + 1; ++i)
+          {
+            tesseract_planning::MoveInstruction move_instruction(JointWaypoint(current_jv),
+                                                                 MoveInstructionType::FREESPACE);
+            move_instruction.setPosition(current_jv);
+            move_instruction.setTCP(plan_instruction->getTCP());
+            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+            move_instruction.setDescription(plan_instruction->getDescription());
+            composite.push_back(move_instruction);
+          }
+        }
+        else
+        {
+          throw std::runtime_error("tesseract_planning::generateSeed: unsupported waypoints provided!");
+        }
+
+        seed.push_back(composite);
+      }
+      else
+      {
+        throw std::runtime_error("Unsupported!");
+      }
+
+      found_plan_instruction = true;
+      start_waypoint = plan_instruction->getWaypoint();
+    }
+    else
+    {
+      seed.push_back(instruction);
+    }
+  }
+
+
+
+
+
+
 
   return response.status;
 }
 
-void InterpolatorMotionPlanner::clear() { config_ = nullptr; }
+void InterpolatorMotionPlanner::clear() {}
 
-tesseract_common::StatusCode InterpolatorMotionPlanner::isConfigured() const
+
+bool InterpolatorMotionPlanner::checkUserInput(const PlannerRequest& request) const
 {
-  if (config_ == nullptr)
-    return tesseract_common::StatusCode(InterpolatorMotionPlannerStatusCategory::ErrorIsNotConfigured,
-                                        status_category_);
-
-  return tesseract_common::StatusCode(InterpolatorMotionPlannerStatusCategory::IsConfigured, status_category_);
-}
-
-bool InterpolatorMotionPlanner::setConfiguration(
-    InterpolatorPlannerConfig::Ptr config)
-{
-  // Reset state
-  clear();
-
-  if (!config)
+  // Check that parameters are valid
+  if (request.tesseract == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("In InterpolatorPlanner: tesseract is a required parameter and has not been set");
     return false;
+  }
 
-  config_ = std::move(config);
+  // Check that parameters are valid
+  auto manipulators = request.tesseract->getFwdKinematicsManagerConst()->getAvailableFwdKinematicsManipulators();
+  if (std::find(manipulators.begin(), manipulators.end(), request.manipulator) == manipulators.end())
+  {
+    CONSOLE_BRIDGE_logError("In InterpolatorPlanner: manipulator is a required parameter and is not found in "
+                            "the list of available manipulators");
+    return false;
+  }
+
+  if (request.instructions.empty())
+  {
+    CONSOLE_BRIDGE_logError("InterpolatorPlanner requires at least 2 instructions");
+    return false;
+  }
+
   return true;
 }
