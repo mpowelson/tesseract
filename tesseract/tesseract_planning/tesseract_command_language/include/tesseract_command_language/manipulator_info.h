@@ -42,6 +42,9 @@ namespace tesseract_planning
  */
 struct ManipulatorInfo
 {
+  ManipulatorInfo() = default;
+  ManipulatorInfo(std::string manipulator) : manipulator(manipulator) {}
+
   /** @brief Name of the manipulator group */
   std::string manipulator;
 

@@ -34,6 +34,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 
+#include <tesseract_motion_planners/simple/simple_motion_planner.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
+
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
@@ -47,10 +50,10 @@ namespace tesseract_planning
 {
 inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
 {
-  // Setup Fake Interpolator
-  auto interpolator = std::make_shared<RandomProcessGenerator>();
-  interpolator->name = "interpolator";
-  interpolator->success_frequency = 0.0;  // Always fails
+  // Setup Interpolator
+  auto interpolator = std::make_shared<SimpleMotionPlanner>("interpolator");
+  interpolator->plan_profiles["FREESPACE"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -65,7 +68,7 @@ inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
   ompl_planner->plan_profiles["FREESPACE"] = std::make_shared<OMPLDefaultPlanProfile>();
   auto ompl_generator = std::make_shared<MotionPlannerProcessGenerator>(ompl_planner);
 
-  return std::vector<ProcessGenerator::Ptr>{ interpolator, trajopt_generator, ompl_generator };
+  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, trajopt_generator, ompl_generator };
 }
 
 }  // namespace tesseract_planning

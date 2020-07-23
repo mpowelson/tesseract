@@ -141,7 +141,8 @@ int main(int /*argc*/, char** /*argv*/)
   auto trajopt_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed;
+//  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
 
   // Create Planning Request
   PlannerRequest request;

@@ -107,6 +107,7 @@ tesseract_common::StatusCode SimpleMotionPlanner::solve(const PlannerRequest& re
 
   // Get the start waypoint/instruction
   MoveInstruction start_instruction = getStartInstruction(request, current_state, fwd_kin);
+  start_waypoint = start_instruction.getWaypoint();
   seed.setStartInstruction(start_instruction);
 
   // Process the instructions into the seed
@@ -132,8 +133,6 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
   Waypoint start_waypoint{ NullWaypoint() };
   MoveInstruction start_instruction_seed(start_waypoint, MoveInstructionType::START);
 
-  Eigen::VectorXd current_jv = current_state->getJointValues(fwd_kin->getJointNames());
-
   if (request.instructions.hasStartInstruction())
   {
     assert(isMoveInstruction(request.instructions.getStartInstruction()));
@@ -146,7 +145,7 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
   }
   else
   {
-    JointWaypoint temp(current_jv);
+    JointWaypoint temp(current_state->getJointValues(fwd_kin->getJointNames()));
     temp.joint_names = fwd_kin->getJointNames();
     start_waypoint = temp;
 
