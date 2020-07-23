@@ -95,7 +95,7 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
   for (std::size_t i = first_task_idx; i < process_tasks_.size() - 1; i++)
   {
     // TODO: Do something like this to make validator tasks that run in parallel (figure out how to do conditional
-    // dynamic tasking). It might be easier to do our own parallelization inside a task
+    // dynamic tasking). It might be easier to do our own parallelization inside a task if that doesn't break things
     //    validator_tasks_.emplace_back(taskflow->emplace([] (tf::Subflow& subflow) {
     //                                       int success = 1;
     //                                       tf::Task B1 = subflow.emplace([](){}).name("B1");

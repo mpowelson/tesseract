@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-//CompositeInstruction SeedGenerator::generateSeed(const CompositeInstruction& instructions)
+// CompositeInstruction SeedGenerator::generateSeed(const CompositeInstruction& instructions)
 //{
 //  current_jv = current_state->getJointValues(fwd_kin->getJointNames());
 //  world_to_base = current_state->link_transforms.at(fwd_kin->getBaseLinkName());

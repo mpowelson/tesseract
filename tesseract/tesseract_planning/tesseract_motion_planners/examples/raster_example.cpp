@@ -142,7 +142,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Create a seed
   CompositeInstruction seed;
-//  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  //  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
 
   // Create Planning Request
   PlannerRequest request;

@@ -64,21 +64,12 @@ int main()
   // --------------------
   CompositeInstruction program = freespaceExampleProgram();
   const Instruction program_instruction{ program };
-
-  // --------------------
-  // Generate the seed - I think eventually this should go in the manager itself
-  // --------------------
   Instruction seed = CompositeInstruction();
-//  Instruction seed = generateSeed(*program_instruction.cast_const<CompositeInstruction>(),
-//                                  tesseract->getEnvironment()->getCurrentState(),
-//                                  fwd_kin,
-//                                  inv_kin);
 
   // --------------------
   // Print Diagnostics
   // --------------------
   program_instruction.print("Program: ");
-  seed.print("Seed:    ");
 
   // --------------------
   // Define the Process Input

@@ -148,9 +148,9 @@ inline std::vector<Waypoint> interpolate_waypoint(const Waypoint& start, const W
   }
 }
 
-//class SeedGenerator
+// class SeedGenerator
 //{
-//public:
+// public:
 //  SeedGenerator() = default;
 //  SeedGenerator(tesseract_environment::EnvState::ConstPtr current_state,
 //                tesseract_kinematics::ForwardKinematics::Ptr fwd_kin,
@@ -170,12 +170,12 @@ inline std::vector<Waypoint> interpolate_waypoint(const Waypoint& start, const W
 //  Eigen::VectorXd current_jv = current_state->getJointValues(fwd_kin->getJointNames());
 //  Eigen::Isometry3d world_to_base = current_state->link_transforms.at(fwd_kin->getBaseLinkName());
 
-//protected:
+// protected:
 //  CompositeInstruction processCompositeInstruction(const CompositeInstruction& instructions);
 //};
 
 ///** @brief Provided for backwards compatibility */
-//inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
+// inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
 //                                         const tesseract_environment::EnvState::ConstPtr& current_state,
 //                                         const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,
 //                                         const tesseract_kinematics::InverseKinematics::Ptr& inv_kin,
