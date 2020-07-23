@@ -65,11 +65,6 @@ public:
    * @param process Process added to the taskflow
    */
   void registerProcess(const ProcessGenerator::Ptr& process);
-  /**
-   * @brief Add another validator used to verify that the process succeeded
-   * @param validator Validator added to the checks
-   */
-  void registerValidator(const ProcessGenerator::Ptr& validator);
 
   std::string name;
 
@@ -78,7 +73,6 @@ private:
   std::vector<ProcessGenerator::Ptr> validators_;
   std::vector<std::shared_ptr<tf::Taskflow>> sequential_failure_trees_;
   std::vector<tf::Task> process_tasks_;
-  std::vector<tf::Task> validator_tasks_;
 
   Instruction null_instruction{ NullInstruction() };
 };

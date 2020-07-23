@@ -94,24 +94,8 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
   // Apply the fail-active logic - sequentially calling the planners until one succeeds
   for (std::size_t i = first_task_idx; i < process_tasks_.size() - 1; i++)
   {
-    // TODO: Do something like this to make validator tasks that run in parallel (figure out how to do conditional
-    // dynamic tasking). It might be easier to do our own parallelization inside a task if that doesn't break things
-    //    validator_tasks_.emplace_back(taskflow->emplace([] (tf::Subflow& subflow) {
-    //                                       int success = 1;
-    //                                       tf::Task B1 = subflow.emplace([](){}).name("B1");
-    //                                       tf::Task B2 = subflow.emplace([](){}).name("B2");
-    //                                       tf::Task B3 = subflow.emplace([](){}).name("B3");
-    //                                       B1.precede(B3);
-    //                                       B2.precede(B3);
-    //                                       return success;
-    //                                     }).name("Validator"));
-
-    validator_tasks_.emplace_back(taskflow->emplace([]() { return 1; }).name("Validator"));
-
     // If the process succeeds, go to the validator. Otherwise, proceed to the next process
     process_tasks_[i].precede(process_tasks_[i + 1], validator_tasks_.back());
-    // If the validator succeeds, go to the done task
-    validator_tasks_.back().precede(process_tasks_[i + 1], process_tasks_[done_task_idx]);
   }
 
   // If the last planner fails, call the error callback
