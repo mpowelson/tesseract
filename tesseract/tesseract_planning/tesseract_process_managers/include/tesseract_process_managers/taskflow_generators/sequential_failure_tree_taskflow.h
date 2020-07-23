@@ -36,6 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+/** @brief This class generates taskflows for a sequential failure tree. Each process is executed in order until one
+ * succeeds. Between each process, the validator tasks are executed (if not empty). For a process to succeed, the
+ * process itself must succeed and all of the validators must succeed*/
 class SequentialFailureTreeTaskflow : public TaskflowGenerator
 {
 public:
@@ -57,15 +60,25 @@ public:
                                  const Instruction& end_instruction,
                                  std::function<void()> done_cb,
                                  std::function<void()> error_cb);
-
+  /**
+   * @brief Add another process that will be added to the taskflow
+   * @param process Process added to the taskflow
+   */
   void registerProcess(const ProcessGenerator::Ptr& process);
+  /**
+   * @brief Add another validator used to verify that the process succeeded
+   * @param validator Validator added to the checks
+   */
+  void registerValidator(const ProcessGenerator::Ptr& validator);
 
   std::string name;
 
 private:
   std::vector<ProcessGenerator::Ptr> processes_;
+  std::vector<ProcessGenerator::Ptr> validators_;
   std::vector<std::shared_ptr<tf::Taskflow>> sequential_failure_trees_;
-  std::vector<tf::Task> tasks_;
+  std::vector<tf::Task> process_tasks_;
+  std::vector<tf::Task> validator_tasks_;
 
   Instruction null_instruction{ NullInstruction() };
 };

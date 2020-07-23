@@ -51,7 +51,7 @@ namespace tesseract_planning
 inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
 {
   // Setup Interpolator
-  auto interpolator = std::make_shared<SimpleMotionPlanner>("interpolator");
+  auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
   interpolator->plan_profiles["FREESPACE"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
 
