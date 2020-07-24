@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_interpolation_plan_profile.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_motion_planners/core/utils.h>

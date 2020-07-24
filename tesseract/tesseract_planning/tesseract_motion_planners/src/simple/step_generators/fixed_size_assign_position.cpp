@@ -1,10 +1,10 @@
 /**
- * @file fixed_size_interpolation.h
+ * @file fixed_size_assign_position.cpp
  * @brief
  *
  * @author Levi Armstrong
  * @author Matthew Powelson
- * @date July 23, 2020
+ * @date July 24, 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -36,11 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& /*start*/,
-                                                 const JointWaypoint& /*end*/,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 int steps)
+CompositeInstruction fixedSizeAssignJointPosition(const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps)
 {
   CompositeInstruction composite;
 
@@ -52,7 +50,8 @@ CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& /*start*/
   // Convert to MoveInstructions
   for (int i = 1; i < steps; ++i)
   {
-    tesseract_planning::MoveInstruction move_instruction(wp, MoveInstructionType::FREESPACE);  // TODO: Set this type based on base_instruction (freespace or linear)
+    tesseract_planning::MoveInstruction move_instruction(
+        wp, MoveInstructionType::FREESPACE);  // TODO: Set this type based on base_instruction (freespace or linear)
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -61,45 +60,46 @@ CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& /*start*/
 }
 
 CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& /*start*/,
-                                                 const CartesianWaypoint& /*end*/,
-                                                 const PlanInstruction& /*base_instruction*/,
-                                                 const PlannerRequest& /*request*/,
-                                                 int /*steps*/)
+                                                  const JointWaypoint& /*end*/,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeAssignJointPosition with Joint/Cart not yet implemented. Pull requests welcome");
+  return fixedSizeAssignJointPosition(base_instruction, request, steps);
+}
 
-  return CompositeInstruction();
+CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& /*start*/,
+                                                  const CartesianWaypoint& /*end*/,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps)
+{
+  return fixedSizeAssignJointPosition(base_instruction, request, steps);
 }
 
 CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*start*/,
-                                                 const JointWaypoint& /*end*/,
-                                                 const PlanInstruction& /*base_instruction*/,
-                                                 const PlannerRequest& /*request*/,
-                                                 int /*steps*/)
+                                                  const JointWaypoint& /*end*/,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeAssignJointPosition with Joint/Cart not yet implemented. Pull requests welcome");
-
-  return CompositeInstruction();
+  return fixedSizeAssignJointPosition(base_instruction, request, steps);
 }
 
 CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*start*/,
-                                                 const CartesianWaypoint& /*end*/,
-                                                 const PlanInstruction& /*base_instruction*/,
-                                                 const PlannerRequest& /*request*/,
-                                                 int /*steps*/)
+                                                  const CartesianWaypoint& /*end*/,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeAssignJointPosition with Joint/Cart not yet implemented. Pull requests welcome");
-
-  return CompositeInstruction();
+  return fixedSizeAssignJointPosition(base_instruction, request, steps);
 }
 
-CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint& /*start*/,
-                                                     const JointWaypoint& /*end*/,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     int steps)
+CompositeInstruction fixedSizeAssignCartesianPosition(const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps)
 {
-    CompositeInstruction composite;
+  CompositeInstruction composite;
 
   // Initialize
   auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(
@@ -122,7 +122,8 @@ CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint& /*sta
   // Convert to MoveInstructions
   for (int p = 1; p < steps; ++p)
   {
-    tesseract_planning::MoveInstruction move_instruction(wp, MoveInstructionType::LINEAR);
+    tesseract_planning::MoveInstruction move_instruction(wp, MoveInstructionType::LINEAR);  // TODO: Get from
+                                                                                            // base_instruction
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -132,36 +133,39 @@ CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint& /*sta
 }
 
 CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint& /*start*/,
-                                                     const CartesianWaypoint& /*end*/,
-                                                     const PlanInstruction& /*base_instruction*/,
-                                                     const PlannerRequest& /*request*/,
-                                                     int /*steps*/)
+                                                      const JointWaypoint& /*end*/,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeAssignCartesianPosition with Joint/Cart not yet implemented. Pull requests welcome");
+  return fixedSizeAssignCartesianPosition(base_instruction, request, steps);
+}
 
-  return CompositeInstruction();
+CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint& /*start*/,
+                                                      const CartesianWaypoint& /*end*/,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps)
+{
+  return fixedSizeAssignCartesianPosition(base_instruction, request, steps);
 }
 
 CompositeInstruction fixedSizeAssignCartesianPosition(const CartesianWaypoint& /*start*/,
-                                                     const JointWaypoint& /*end*/,
-                                                     const PlanInstruction& /*base_instruction*/,
-                                                     const PlannerRequest& /*request*/,
-                                                     int /*steps*/)
+                                                      const JointWaypoint& /*end*/,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeAssignCartesianPosition with Cart/Joint not yet implemented. Pull requests welcome");
-
-  return CompositeInstruction();
+  return fixedSizeAssignCartesianPosition(base_instruction, request, steps);
 }
 
 CompositeInstruction fixedSizeAssignCartesianPosition(const CartesianWaypoint& /*start*/,
-                                                     const CartesianWaypoint& /*end*/,
-                                                     const PlanInstruction& /*base_instruction*/,
-                                                     const PlannerRequest& /*request*/,
-                                                     int /*steps*/)
+                                                      const CartesianWaypoint& /*end*/,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeAssignCartesianPosition with Cart/Cart not yet implemented. Pull requests welcome");
-
-  return CompositeInstruction();
+  return fixedSizeAssignCartesianPosition(base_instruction, request, steps);
 }
 
 }  // namespace tesseract_planning

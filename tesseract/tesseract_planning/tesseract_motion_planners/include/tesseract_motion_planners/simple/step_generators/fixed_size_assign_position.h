@@ -1,9 +1,10 @@
 /**
- * @file fixed_size_interpolation.h
- * @brief Provides interpolators where the number of steps are specified
+ * @file fixed_size_assign_position.cpp
+ * @brief
  *
+ * @author Levi Armstrong
  * @author Matthew Powelson
- * @date July 23, 2020
+ * @date July 24, 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -37,6 +38,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+  CompositeInstruction fixedSizeAssignJointPosition(const PlanInstruction& base_instruction,
+                                                   const PlannerRequest& request,
+                                                   int steps);
+
 CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint&,
                                                  const JointWaypoint&,
                                                  const PlanInstruction& base_instruction,
@@ -60,6 +65,10 @@ CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint&,
                                                  const PlanInstruction& base_instruction,
                                                  const PlannerRequest& request,
                                                  int steps);
+
+CompositeInstruction fixedSizeAssignCartesianPosition(         const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     int steps);
 
 CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint&,
                                                      const JointWaypoint&,
