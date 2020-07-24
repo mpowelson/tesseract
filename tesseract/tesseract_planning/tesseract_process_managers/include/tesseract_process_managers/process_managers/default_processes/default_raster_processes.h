@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
+#include <tesseract_process_managers/process_generators/validators/random_validator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
@@ -51,7 +52,7 @@ inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
       std::make_shared<SimplePlannerDefaultPlanProfile>();  // TODO: switch this for interpolator plan profile once the
                                                             // step generators have been implemented
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
-  interpolator_generator->validators.push_back(&randomValidator);
+  interpolator_generator->validators.emplace_back(&randomValidator);
 
   // Setup processes
   auto descartes_planner = std::make_shared<DescartesMotionPlanner<double>>();
@@ -61,7 +62,7 @@ inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
   auto descartes = std::make_shared<MotionPlannerProcessGenerator>(descartes_planner);
   descartes->planner = descartes_planner;
 
-  return std::vector<ProcessGenerator::Ptr>{ interpolator, descartes };
+  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, descartes };
 }
 
 }  // namespace tesseract_planning

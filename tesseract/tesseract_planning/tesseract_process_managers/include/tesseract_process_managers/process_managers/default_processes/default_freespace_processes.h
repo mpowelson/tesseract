@@ -57,7 +57,7 @@ inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
       std::make_shared<SimplePlannerDefaultPlanProfile>();  // TODO: switch this for interpolator plan profile once the
                                                             // step generators have been implemented
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
-  interpolator_generator->validators.push_back(&randomValidator);
+  interpolator_generator->validators.emplace_back(&randomValidator);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();

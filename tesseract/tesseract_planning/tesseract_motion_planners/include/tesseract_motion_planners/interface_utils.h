@@ -52,7 +52,15 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
 
   // Set up planner
   SimpleMotionPlanner planner;
+
   planner.plan_profiles[instructions.getProfile()] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  auto flat = flatten(instructions, true);
+  for (const auto& i : flat)
+  {
+    if (isPlanInstruction(i.get()))
+      planner.plan_profiles[i.get().cast_const<PlanInstruction>()->getProfile()] =
+          std::make_shared<SimplePlannerDefaultPlanProfile>();
+  }
 
   // Solve
   planner.solve(request, response);
