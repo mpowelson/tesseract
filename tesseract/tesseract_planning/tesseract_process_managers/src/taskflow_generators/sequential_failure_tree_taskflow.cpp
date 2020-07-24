@@ -95,7 +95,7 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
   for (std::size_t i = first_task_idx; i < process_tasks_.size() - 1; i++)
   {
     // If the process succeeds, go to the validator. Otherwise, proceed to the next process
-    process_tasks_[i].precede(process_tasks_[i + 1], validator_tasks_.back());
+    process_tasks_[i].precede(process_tasks_[i + 1], process_tasks_[done_task_idx]);
   }
 
   // If the last planner fails, call the error callback
@@ -108,10 +108,4 @@ void SequentialFailureTreeTaskflow::registerProcess(const ProcessGenerator::Ptr&
 {
   processes_.push_back(process);
 }
-
-void SequentialFailureTreeTaskflow::registerValidator(const ProcessGenerator::Ptr& validator)
-{
-  validators_.push_back(validator);
-}
-
 }  // namespace tesseract_planning
