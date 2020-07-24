@@ -38,61 +38,61 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-  CompositeInstruction fixedSizeAssignJointPosition(const PlanInstruction& base_instruction,
-                                                   const PlannerRequest& request,
-                                                   int steps);
+CompositeInstruction fixedSizeAssignJointPosition(const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps);
 
 CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint&,
-                                                 const JointWaypoint&,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 int steps);
+                                                  const JointWaypoint&,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps);
 
 CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint&,
-                                                 const CartesianWaypoint&,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 int steps);
+                                                  const CartesianWaypoint&,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps);
 
 CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint&,
-                                                 const JointWaypoint&,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 int steps);
+                                                  const JointWaypoint&,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps);
 
 CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint&,
-                                                 const CartesianWaypoint&,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 int steps);
+                                                  const CartesianWaypoint&,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  int steps);
 
-CompositeInstruction fixedSizeAssignCartesianPosition(         const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     int steps);
-
-CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint&,
-                                                     const JointWaypoint&,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     int steps);
+CompositeInstruction fixedSizeAssignCartesianPosition(const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps);
 
 CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint&,
-                                                     const CartesianWaypoint&,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     int steps);
+                                                      const JointWaypoint&,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps);
+
+CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint&,
+                                                      const CartesianWaypoint&,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps);
 
 CompositeInstruction fixedSizeAssignCartesianPosition(const CartesianWaypoint&,
-                                                     const JointWaypoint&,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     int steps);
+                                                      const JointWaypoint&,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps);
 
 CompositeInstruction fixedSizeAssignCartesianPosition(const CartesianWaypoint&,
-                                                     const CartesianWaypoint&,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     int steps);
+                                                      const CartesianWaypoint&,
+                                                      const PlanInstruction& base_instruction,
+                                                      const PlannerRequest& request,
+                                                      int steps);
 
 }  // namespace tesseract_planning
 

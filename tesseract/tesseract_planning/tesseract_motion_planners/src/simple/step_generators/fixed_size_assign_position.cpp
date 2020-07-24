@@ -45,10 +45,9 @@ CompositeInstruction fixedSizeAssignJointPosition(const PlanInstruction& base_in
   // Get current state
   std::string manipulator = base_instruction.getManipulatorInfo().manipulator;
   auto fk = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
-  if (fk)
-    JointWaypoint wp = request.env_state->getJointValues(fk->getJointNames());
-  else
+  if (!fk)
     throw std::runtime_error("fixedSizeAssignJointPosition: failed to find forward kinematics solution!");
+  JointWaypoint wp = request.env_state->getJointValues(fk->getJointNames());
 
   // Convert to MoveInstructions
   for (int i = 1; i < steps; ++i)
