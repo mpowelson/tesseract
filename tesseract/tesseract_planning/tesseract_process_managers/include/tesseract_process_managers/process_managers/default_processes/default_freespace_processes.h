@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_interpolation_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
 
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
@@ -52,7 +52,7 @@ inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
 {
   // Setup Interpolator
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
-  interpolator->plan_profiles["FREESPACE"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  interpolator->plan_profiles["FREESPACE"] = std::make_shared<SimplePlannerDefaultPlanProfile>();  // TODO: switch this for interpolator plan profile once the step generators have been implemented
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
 
   // Setup TrajOpt

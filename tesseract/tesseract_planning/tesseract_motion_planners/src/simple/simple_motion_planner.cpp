@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_interpolation_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_motion_planners/core/utils.h>
@@ -169,7 +169,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
     }
     else if (isPlanInstruction(instruction))
     {
-      const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
+      const auto plan_instruction = *instruction.cast_const<PlanInstruction>();
 
       bool is_cwp1 = isCartesianWaypoint(start_waypoint);
       bool is_jwp1 = isJointWaypoint(start_waypoint);
@@ -184,6 +184,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
         profile = "DEFAULT";
       auto current_profile = plan_profiles.find(profile);
 
+      // TODO: Catch exceptions
       if (plan_instruction->isLinear())
       {
         if (is_cwp1 && is_cwp2)
