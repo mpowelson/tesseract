@@ -37,7 +37,7 @@ public:
   using CreateMethod = std::function<ContinuousContactManager::Ptr()>;
   ContinuousContactManagerFactory() = default;
 
-  bool registar(const std::string& name, CreateMethod create_function)
+  bool registerManager(const std::string& name, CreateMethod create_function)
   {
     auto it = continuous_types.find(name);
     if (it == continuous_types.end())

@@ -36,7 +36,7 @@ public:
   using CreateMethod = std::function<DiscreteContactManager::Ptr()>;
   DiscreteContactManagerFactory() = default;
 
-  bool registar(const std::string& name, CreateMethod create_function)
+  bool registerManager(const std::string& name, CreateMethod create_function)
   {
     auto it = discrete_types.find(name);
     if (it == discrete_types.end())

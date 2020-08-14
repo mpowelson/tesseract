@@ -383,7 +383,7 @@ public:
   bool registerDiscreteContactManager(const std::string& name,
                                       tesseract_collision::DiscreteContactManagerFactory::CreateMethod create_function)
   {
-    return discrete_factory_.registar(name, std::move(create_function));
+    return discrete_factory_.registerManager(name, std::move(create_function));
   }
 
   /**
@@ -396,7 +396,7 @@ public:
   registerContinuousContactManager(const std::string& name,
                                    tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
   {
-    return continuous_factory_.registar(name, std::move(create_function));
+    return continuous_factory_.registerManager(name, std::move(create_function));
   }
 
   /** @brief Merge a graph into the current environment
