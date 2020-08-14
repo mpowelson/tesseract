@@ -37,20 +37,27 @@ Environment::Ptr KDLEnv::clone() const
 {
   auto cloned_env = std::make_shared<KDLEnv>();
 
-  // Bring cloned environment up to current state using command history
-  cloned_env->init(scene_graph_);
-  cloned_env->applyCommands(commands_);
-
-  // Register contact managers
-  tesseract_collision::DiscreteContactManager::Ptr discrete_manager = getDiscreteContactManager();
-  if (discrete_manager)
-    cloned_env->registerDiscreteContactManager(discrete_manager_name_,
-                                               [discrete_manager]() { return discrete_manager; });
-
-  tesseract_collision::ContinuousContactManager::Ptr continuous_manager = getContinuousContactManager();
-  if (continuous_manager)
-    cloned_env->registerContinuousContactManager(continuous_manager_name_,
-                                                 [continuous_manager]() { return continuous_manager; });
+  std::lock_guard<std::mutex> lock(mutex_);
+  cloned_env->initialized_ = initialized_;
+  cloned_env->revision_ = revision_;
+  cloned_env->commands_ = commands_;
+  cloned_env->scene_graph_ = scene_graph_->clone();
+  cloned_env->scene_graph_const_ = cloned_env->scene_graph_;
+  cloned_env->current_state_ = std::make_shared<EnvState>(*current_state_);
+  cloned_env->state_solver_ = state_solver_->clone();
+  cloned_env->link_names_ = link_names_;
+  cloned_env->joint_names_ = joint_names_;
+  cloned_env->active_link_names_ = active_link_names_;
+  cloned_env->active_joint_names_ = active_joint_names_;
+  cloned_env->is_contact_allowed_fn_ = is_contact_allowed_fn_;
+  if (discrete_manager_)
+    cloned_env->discrete_manager_ = discrete_manager_->clone();
+  if (continuous_manager_)
+    cloned_env->continuous_manager_ = continuous_manager_->clone();
+  cloned_env->discrete_manager_name_ = discrete_manager_name_;
+  cloned_env->continuous_manager_name_ = continuous_manager_name_;
+  cloned_env->discrete_factory_ = discrete_factory_;
+  cloned_env->continuous_factory_ = continuous_factory_;
 
   return cloned_env;
 }
