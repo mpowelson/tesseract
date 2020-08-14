@@ -118,7 +118,7 @@ public:
   SceneGraph(SceneGraph&& other) = default;
   SceneGraph& operator=(SceneGraph&& other) = default;
 
-  SceneGraph::Ptr clone();
+  SceneGraph::Ptr clone() const;
 
   /**
    * @brief Sets the graph name

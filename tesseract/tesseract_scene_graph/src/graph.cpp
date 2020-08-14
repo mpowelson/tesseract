@@ -38,7 +38,7 @@ namespace tesseract_scene_graph
 {
 SceneGraph::SceneGraph() : acm_(std::make_shared<AllowedCollisionMatrix>()) {}
 
-SceneGraph::Ptr SceneGraph::clone()
+SceneGraph::Ptr SceneGraph::clone() const
 {
   SceneGraph::Ptr cloned_graph = std::make_shared<SceneGraph>();
 

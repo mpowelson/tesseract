@@ -33,4 +33,26 @@ bool KDLEnv::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
   return Environment::create<KDLStateSolver>(scene_graph);
 }
 
+Environment::Ptr KDLEnv::clone() const
+{
+  auto cloned_env = std::make_shared<KDLEnv>();
+
+  // Bring cloned environment up to current state using command history
+  cloned_env->init(scene_graph_);
+  cloned_env->applyCommands(commands_);
+
+  // Register contact managers
+  tesseract_collision::DiscreteContactManager::Ptr discrete_manager = getDiscreteContactManager();
+  if (discrete_manager)
+    cloned_env->registerDiscreteContactManager(discrete_manager_name_,
+                                               [discrete_manager]() { return discrete_manager; });
+
+  tesseract_collision::ContinuousContactManager::Ptr continuous_manager = getContinuousContactManager();
+  if (continuous_manager)
+    cloned_env->registerContinuousContactManager(continuous_manager_name_,
+                                                 [continuous_manager]() { return continuous_manager; });
+
+  return cloned_env;
+}
+
 }  // namespace tesseract_environment
