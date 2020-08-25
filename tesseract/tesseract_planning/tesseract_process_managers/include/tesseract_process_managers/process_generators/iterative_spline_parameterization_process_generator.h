@@ -36,6 +36,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+struct IterativeSplineParameterizationPlanProfile
+{
+  using Ptr = std::shared_ptr<IterativeSplineParameterizationPlanProfile>;
+  using ConstPtr = std::shared_ptr<const IterativeSplineParameterizationPlanProfile>;
+
+  /** @brief max_velocity_scaling_factor The max velocity scaling factor passed to the solver */
+  double max_velocity_scaling_factor = 1.0;
+
+  /** @brief max_velocity_scaling_factor The max acceleration scaling factor passed to the solver */
+  double max_acceleration_scaling_factor = 1.0;
+};
+using IterativeSplineParameterizationPlanProfileMap =
+    std::unordered_map<std::string, IterativeSplineParameterizationPlanProfile::Ptr>;
+
 class IterativeSplineParameterizationProcessGenerator : public ProcessGenerator
 {
 public:
@@ -62,11 +76,7 @@ public:
 
   void setAbort(bool abort) override;
 
-  /** @brief max_velocity_scaling_factor The max velocity scaling factor passed to the solver */
-  double max_velocity_scaling_factor = 1.0;
-
-  /** @brief max_velocity_scaling_factor The max acceleration scaling factor passed to the solver */
-  double max_acceleration_scaling_factor = 1.0;
+  IterativeSplineParameterizationPlanProfileMap plan_profiles;
 
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
