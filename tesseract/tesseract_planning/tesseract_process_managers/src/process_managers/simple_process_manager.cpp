@@ -143,12 +143,12 @@ void SimpleProcessManager::enableProfile(bool enabled) { profile_ = enabled; }
 
 void SimpleProcessManager::successCallback(std::string message)
 {
-  CONSOLE_BRIDGE_logInform("SimpleProcessManager Successful: %s", message.c_str());
+  CONSOLE_BRIDGE_logDebug("SimpleProcessManager Successful: %s", message.c_str());
   success_ = true;
 }
 
 void SimpleProcessManager::failureCallback(std::string message)
 {
-  CONSOLE_BRIDGE_logInform("SimpleProcessManager Failure: %s", message.c_str());
+  CONSOLE_BRIDGE_logDebug("SimpleProcessManager Failure: %s", message.c_str());
   success_ = false;
 }
