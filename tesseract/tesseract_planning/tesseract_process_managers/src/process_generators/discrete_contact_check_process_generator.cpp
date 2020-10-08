@@ -102,15 +102,25 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
   std::vector<tesseract_collision::ContactResultMap> contacts;
   if (contactCheckProgram(contacts, *manager, *state_solver, *ci, longest_valid_segment_length_))
   {
+    int return_val = 1;
     CONSOLE_BRIDGE_logInform("Results are not contact free for process input: %s !",
                              input_result->getDescription().c_str());
     for (std::size_t i = 0; i < contacts.size(); i++)
       for (const auto& contact_vec : contacts[i])
         for (const auto& contact : contact_vec.second)
+        {
           CONSOLE_BRIDGE_logInform(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
                                    contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
                                       .c_str());
-    return 0;
+          if(i == 0)
+          {
+            CONSOLE_BRIDGE_logInform("Ignoring the first timestep. Still will return true if this is the only collision");
+          }
+          else
+            return_val = 0;
+
+        }
+    return return_val;
   }
 
   CONSOLE_BRIDGE_logDebug("Discrete contact check succeeded");
