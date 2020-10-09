@@ -112,11 +112,11 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
           CONSOLE_BRIDGE_logInform(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
                                    contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
                                       .c_str());
-          if(i == 0)
-          {
-            CONSOLE_BRIDGE_logInform("Ignoring the first timestep. Still will return true if this is the only collision");
-          }
-          else
+//          if(i == 0)
+//          {
+//            CONSOLE_BRIDGE_logInform("Ignoring the first timestep. Still will return true if this is the only collision");
+//          }
+//          else
             return_val = 0;
 
         }
