@@ -348,7 +348,7 @@ void TrajOptDefaultCompositeProfile::addCollisionCost(trajopt::ProblemConstructi
       info = special_collision_cost;
     }
   }
-  ct->fixed_steps = fixed_indices;
+//  ct->fixed_steps = fixed_indices;
 
   pci.cost_infos.push_back(ct);
 }
@@ -400,7 +400,7 @@ void TrajOptDefaultCompositeProfile::addCollisionConstraint(trajopt::ProblemCons
       info = special_collision_constraint;
     }
   }
-  ct->fixed_steps = fixed_indices;
+//  ct->fixed_steps = fixed_indices;
 
   pci.cnt_infos.push_back(ct);
 }
