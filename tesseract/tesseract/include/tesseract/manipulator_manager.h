@@ -56,6 +56,12 @@ public:
   bool init(tesseract_environment::Environment::ConstPtr environment, tesseract_scene_graph::SRDFModel::Ptr srdf_model);
 
   /**
+   * @brief Updates all of the stored solvers
+   * @return True if successful
+   */
+  bool update();
+
+  /**
    * @brief This will clone the manager and assign the new environment object
    * @param environment The environment the clone is associated with.
    */

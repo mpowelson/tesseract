@@ -76,6 +76,12 @@ bool ManipulatorManager::init(tesseract_environment::Environment::ConstPtr envir
   return success;
 }
 
+bool ManipulatorManager::update()
+{
+
+  return true;
+}
+
 ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_environment::Environment::ConstPtr environment) const
 {
   auto cloned_manager = std::make_shared<ManipulatorManager>(*this);
