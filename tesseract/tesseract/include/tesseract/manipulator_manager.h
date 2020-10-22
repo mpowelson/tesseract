@@ -309,13 +309,13 @@ private:
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_tree_default_factory_;
   tesseract_kinematics::InverseKinematicsFactory::ConstPtr inv_kin_chain_default_factory_;
   std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsFactory::ConstPtr> fwd_kin_factories_;
-  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematics::ConstPtr>
+  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematics::Ptr>
       fwd_kin_manipulators_;
-  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::ConstPtr> fwd_kin_manipulators_default_;
+  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::Ptr> fwd_kin_manipulators_default_;
   std::unordered_map<std::string, tesseract_kinematics::InverseKinematicsFactory::ConstPtr> inv_kin_factories_;
-  std::map<std::pair<std::string, std::string>, tesseract_kinematics::InverseKinematics::ConstPtr>
+  std::map<std::pair<std::string, std::string>, tesseract_kinematics::InverseKinematics::Ptr>
       inv_kin_manipulators_;
-  std::unordered_map<std::string, tesseract_kinematics::InverseKinematics::ConstPtr> inv_kin_manipulators_default_;
+  std::unordered_map<std::string, tesseract_kinematics::InverseKinematics::Ptr> inv_kin_manipulators_default_;
 
   bool registerDefaultChainSolver(const std::string& group_name, const tesseract_scene_graph::ChainGroup& chain_group);
   bool registerDefaultJointSolver(const std::string& group_name, const tesseract_scene_graph::JointGroup& joint_group);

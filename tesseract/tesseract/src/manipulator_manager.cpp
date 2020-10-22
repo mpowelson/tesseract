@@ -78,8 +78,14 @@ bool ManipulatorManager::init(tesseract_environment::Environment::ConstPtr envir
 
 bool ManipulatorManager::update()
 {
+  bool success = true;
+  for (auto& fk : fwd_kin_manipulators_)
+    success &= fk.second->update();
 
-  return true;
+  for (auto& ik : inv_kin_manipulators_)
+    success &= ik.second->update();
+
+  return success;
 }
 
 ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_environment::Environment::ConstPtr environment) const
