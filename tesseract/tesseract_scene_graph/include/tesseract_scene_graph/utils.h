@@ -22,7 +22,7 @@ inline void processSRDFAllowedCollisions(SceneGraph& scene_graph, const tesserac
  * @return vector of links that are allowed to collide with links given
  */
 inline std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
-                                                     const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries,
+                                                     const AllowedCollisionEntries& acm_entries,
                                                      bool remove_duplicates = true)
 {
   std::vector<std::string> results;
