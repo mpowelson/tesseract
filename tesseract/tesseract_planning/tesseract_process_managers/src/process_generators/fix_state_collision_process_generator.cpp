@@ -73,7 +73,7 @@ bool StateInCollision(const Eigen::Ref<Eigen::VectorXd>& start_pos,
       for (const auto& contact_vec : collisions[i])
         for (const auto& contact : contact_vec.second)
           CONSOLE_BRIDGE_logDebug(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
-                                   contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
+                                   contact.link_names[1] + " Dist: " + std::to_string(contact.distance) + " Safety Margin: " + std::to_string(profile.safety_margin))
                                       .c_str());
   }
 

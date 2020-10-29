@@ -110,9 +110,12 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
     for (std::size_t i = 0; i < contacts.size(); i++)
       for (const auto& contact_vec : contacts[i])
         for (const auto& contact : contact_vec.second)
+        {
           CONSOLE_BRIDGE_logDebug(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
-                                   contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
+                                   contact.link_names[1] + " Dist: " + std::to_string(contact.distance) + " Safety Margin: " + std::to_string(contact_distance_))
                                       .c_str());
+        CONSOLE_BRIDGE_logInform("If Safety margin above is not < 0.005, please tell Matthew");
+        }
     return 0;
   }
 
