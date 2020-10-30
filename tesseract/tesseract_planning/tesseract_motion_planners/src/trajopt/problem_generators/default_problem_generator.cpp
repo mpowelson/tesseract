@@ -126,8 +126,9 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
   }
   else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
   {
-    const Eigen::VectorXd& position = getJointPosition(start_waypoint);
-    start_plan_profile->apply(*pci, position, *start_instruction, composite_mi, active_links, index);
+    JointWaypoint position_wp;
+    position_wp.waypoint = getJointPosition(start_waypoint);
+    start_plan_profile->apply(*pci, position_wp, *start_instruction, composite_mi, active_links, index);
   }
   else
   {
@@ -213,7 +214,8 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
         }
         else if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
-          const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
+          JointWaypoint cur_position;
+          cur_position.waypoint = getJointPosition(plan_instruction->getWaypoint());
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
           if (!pci->kin->calcFwdKin(cur_pose, cur_position))
             throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
@@ -271,7 +273,8 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
       {
         if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
-          const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
+          JointWaypoint cur_position;
+          cur_position.waypoint = getJointPosition(plan_instruction->getWaypoint());
 
           // Add intermediate points with path costs and constraints
           for (std::size_t s = 0; s < seed_composite->size() - 1; ++s)
