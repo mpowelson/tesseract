@@ -46,7 +46,8 @@ enum class TesseractInitType
   URDF_STRING,
   URDF_STRING_SRDF_STRING,
   URDF_PATH,
-  URDF_PATH_SRDF_PATH
+  URDF_PATH_SRDF_PATH,
+  ENVIRONMENT
 };
 
 /** @brief Used to store information about how a given Tesseract was initialized. See the Tesseract init methods.
@@ -77,7 +78,7 @@ struct TesseractInitInfo
   tesseract_scene_graph::SRDFModel::Ptr srdf_model;
 
   /**
-   * @brief Used when InitType is ENVIRONMENT_MANIPULATOR_MANAGER
+   * @brief Used when InitType is ENVIRONMENT
    *
    * This store a clone of the environment
    */

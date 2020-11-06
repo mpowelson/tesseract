@@ -72,6 +72,7 @@ public:
 
   bool isInitialized() const;
 
+  bool init(const tesseract_environment::Environment& env);
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph);
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph, tesseract_scene_graph::SRDFModel::Ptr srdf_model);
   bool init(const std::string& urdf_string, const tesseract_scene_graph::ResourceLocator::Ptr& locator);

@@ -246,6 +246,16 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   return true;
 }
 
+bool Tesseract::init(const tesseract_environment::Environment& env)
+{
+  clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
+  init_info_->type = TesseractInitType::ENVIRONMENT;
+  init_info_->environment = env.clone();
+  initialized_ = true;
+  return initialized_;
+}
+
 bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
 {
   switch (init_info->type)
@@ -267,6 +277,9 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
       break;
     case TesseractInitType::URDF_PATH_SRDF_PATH:
       init(init_info->urdf_path, init_info->srdf_path, init_info->resource_locator);
+      break;
+    case TesseractInitType::ENVIRONMENT:
+      init(*init_info->environment);
       break;
     default:
       CONSOLE_BRIDGE_logError("Unsupported TesseractInitInfo type.");
