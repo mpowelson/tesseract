@@ -71,7 +71,7 @@ Environment::Ptr getEnvironment()
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  auto srdf  = getSRDFModel(scene_graph);
+  auto srdf = getSRDFModel(scene_graph);
   EXPECT_TRUE(srdf != nullptr);
 
   auto env = std::make_shared<Environment>();
@@ -327,9 +327,9 @@ void runChangeJointLimitsTest()
     // Check that the manipulator correctly set the limits
     auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
     EXPECT_NEAR(kin->getLimits().joint_limits(0, 0), limits.lower, 1e-5);
-    EXPECT_NEAR(kin->getLimits().joint_limits(0, 1), limits.lower, 1e-5);
-    EXPECT_NEAR(kin->getLimits().velocity_limits(0), limits.lower, 1e-5);
-    EXPECT_NEAR(kin->getLimits().acceleration_limits(0), limits.lower, 1e-5);
+    EXPECT_NEAR(kin->getLimits().joint_limits(0, 1), limits.upper, 1e-5);
+    EXPECT_NEAR(kin->getLimits().velocity_limits(0), limits.velocity, 1e-5);
+    EXPECT_NEAR(kin->getLimits().acceleration_limits(0), limits.acceleration, 1e-5);
   }
 }
 

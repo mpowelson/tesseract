@@ -113,7 +113,8 @@ public:
 
     if (!srdf_model)
     {
-      CONSOLE_BRIDGE_logDebug("Environment is being initialized without an SRDF Model. Manipulators will not be registered");
+      CONSOLE_BRIDGE_logDebug("Environment is being initialized without an SRDF Model. Manipulators will not be "
+                              "registered");
       srdf_model = std::make_shared<tesseract_scene_graph::SRDFModel>();
       srdf_model->getName() = scene_graph_->getName();
     }

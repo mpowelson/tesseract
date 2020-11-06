@@ -376,6 +376,10 @@ bool Environment::changeJointLimits(const std::string& joint_name, const tessera
   if (!scene_graph_->changeJointLimits(joint_name, limits))
     return false;
 
+  // TODO: Only change joint limits rather than completely rebuilding kinematics
+  if (!manipulator_manager_->update())
+    return false;
+
   ++revision_;
   commands_.push_back(std::make_shared<ChangeJointLimitsCommand>(joint_name, limits));
 
@@ -384,7 +388,7 @@ bool Environment::changeJointLimits(const std::string& joint_name, const tessera
   return true;
 }
 
-tesseract_scene_graph::JointLimits::ConstPtr Environment::getJointLimits(const std::string &joint_name) const
+tesseract_scene_graph::JointLimits::ConstPtr Environment::getJointLimits(const std::string& joint_name) const
 {
   return scene_graph_->getJointLimits(joint_name);
 }
