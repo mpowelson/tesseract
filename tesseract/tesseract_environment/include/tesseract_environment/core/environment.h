@@ -113,6 +113,7 @@ public:
 
     if (!srdf_model)
     {
+      CONSOLE_BRIDGE_logDebug("Environment is being initialized without an SRDF Model. Manipulators will not be registered");
       srdf_model = std::make_shared<tesseract_scene_graph::SRDFModel>();
       srdf_model->getName() = scene_graph_->getName();
     }
@@ -349,6 +350,13 @@ public:
    * @return
    */
   virtual bool changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits& limits);
+
+  /**
+   * @brief Gets the limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @return The joint limits set for the given joint
+   */
+  virtual tesseract_scene_graph::JointLimits::ConstPtr getJointLimits(const std::string& joint_name) const;
 
   /**
    * @brief Set whether a link should be considered during collision checking
