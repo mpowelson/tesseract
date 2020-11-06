@@ -37,10 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract_init_info.h>
 #include <tesseract_environment/core/environment.h>
-#include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract/manipulator_manager.h>
 #include <tesseract_command_language/manipulator_info.h>
 
 namespace tesseract
@@ -85,8 +83,6 @@ public:
             const boost::filesystem::path& srdf_path,
             const tesseract_scene_graph::ResourceLocator::Ptr& locator);
 
-  bool init(const tesseract_environment::Environment& env, const ManipulatorManager& manipulator_manager);
-
   bool init(const TesseractInitInfo::Ptr& init_info);
 
   /** @brief Clone the Tesseract and all of the internals
@@ -102,8 +98,10 @@ public:
   tesseract_environment::Environment::Ptr getEnvironment();
   tesseract_environment::Environment::ConstPtr getEnvironment() const;
 
-  ManipulatorManager::Ptr getManipulatorManager();
-  ManipulatorManager::ConstPtr getManipulatorManager() const;
+  DEPRECATED("Please use getEnvironment->getManipulatorManager()")
+  tesseract_environment::ManipulatorManager::Ptr getManipulatorManager();
+  DEPRECATED("Please use getEnvironment->getManipulatorManager()")
+  tesseract_environment::ManipulatorManager::ConstPtr getManipulatorManager() const;
 
   /**
    * @brief Find tool center point provided in the manipulator info
@@ -132,7 +130,6 @@ public:
 private:
   bool initialized_;
   tesseract_environment::Environment::Ptr environment_;
-  ManipulatorManager::Ptr manipulator_manager_;
   TesseractInitInfo::Ptr init_info_;
   std::vector<FindTCPCallbackFn> find_tcp_cb_;
 
