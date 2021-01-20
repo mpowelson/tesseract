@@ -80,6 +80,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tesseract::tesseract_command_language
     tesseract::tesseract_motion_planners_simple
     tesseract::tesseract_motion_planners_trajopt
+    tesseract::tesseract_motion_planners_trajopt_ifopt
     tesseract::tesseract_motion_planners_descartes
     tesseract::tesseract_motion_planners_ompl
     tesseract::tesseract_time_parameterization)
