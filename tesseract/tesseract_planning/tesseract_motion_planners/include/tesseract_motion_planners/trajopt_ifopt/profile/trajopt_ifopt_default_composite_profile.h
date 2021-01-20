@@ -56,11 +56,11 @@ public:
   /** @brief This default to all ones, but allows you to weight different joints */
   Eigen::VectorXd velocity_coeff;
   /** @brief If true, a joint acceleration cost with a target of 0 will be applied for all timesteps Default: false*/
-  bool smooth_accelerations = true;
+  bool smooth_accelerations = false;
   /** @brief This default to all ones, but allows you to weight different joints */
   Eigen::VectorXd acceleration_coeff;
   /** @brief If true, a joint jerk cost with a target of 0 will be applied for all timesteps Default: false*/
-  bool smooth_jerks = true;
+  bool smooth_jerks = false;
   /** @brief This default to all ones, but allows you to weight different joints */
   Eigen::VectorXd jerk_coeff;
 
