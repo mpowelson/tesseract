@@ -66,7 +66,8 @@ DefaultTrajoptIfoptProblemGenerator(const std::string& name,
 
   // Flatten input instructions
   auto instructions_flat = flattenProgram(request.instructions);
-  auto seed_flat = flattenProgramToPattern(request.seed, request.instructions);
+  auto seed_flat_pattern = flattenProgramToPattern(request.seed, request.instructions);
+  auto seed_flat = flattenProgram(request.seed);
 
   // ----------------
   // Setup variables
@@ -144,9 +145,9 @@ DefaultTrajoptIfoptProblemGenerator(const std::string& name,
       ManipulatorInfo manip_info = composite_mi.getCombined(plan_instruction->getManipulatorInfo());
       Eigen::Isometry3d tcp = request.env->findTCP(manip_info);
 
-      assert(isCompositeInstruction(seed_flat[static_cast<std::size_t>(i)].get()));
+      assert(isCompositeInstruction(seed_flat_pattern[static_cast<std::size_t>(i)].get()));
       const auto* seed_composite =
-          seed_flat[static_cast<std::size_t>(i)].get().cast_const<tesseract_planning::CompositeInstruction>();
+          seed_flat_pattern[static_cast<std::size_t>(i)].get().cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
       std::string profile = getProfileString(plan_instruction->getProfile(), name, request.plan_profile_remapping);
