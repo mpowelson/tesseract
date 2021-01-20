@@ -45,6 +45,7 @@ DefaultTrajoptIfoptProblemGenerator(const std::string& name,
 {
   // Create the problem
   auto problem = std::make_shared<TrajOptIfoptProblem>();
+  problem->environment = request.env;
   problem->env_state = request.env_state;
   problem->nlp = std::make_shared<ifopt::Problem>();
 
