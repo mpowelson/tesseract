@@ -140,9 +140,13 @@ DefaultTrajoptProblemGenerator(const std::string& name,
   else if (isJointWaypoint(start_waypoint) || isStateWaypoint(start_waypoint))
   {
     assert(checkJointPositionFormat(pci->kin->getJointNames(), start_waypoint));
+    bool toleranced = false;
 
     if (isJointWaypoint(start_waypoint))
+    {
+      toleranced = start_waypoint.cast_const<JointWaypoint>()->isToleranced();
       start_plan_profile->apply(*pci, *start_waypoint.cast_const<JointWaypoint>(), *start_instruction, composite_mi, active_links, index);
+    }
     else if (isStateWaypoint(start_waypoint))
     {
       JointWaypoint jwp(start_waypoint.cast_const<StateWaypoint>()->joint_names, start_waypoint.cast_const<StateWaypoint>()->position);
@@ -152,7 +156,8 @@ DefaultTrajoptProblemGenerator(const std::string& name,
       throw std::runtime_error("Unsupported start_waypoint type.");
 
     // Add to fixed indices
-    fixed_steps.push_back(index);
+    if(!toleranced)
+      fixed_steps.push_back(index);
   }
   else
   {
@@ -242,9 +247,14 @@ DefaultTrajoptProblemGenerator(const std::string& name,
         else if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
           assert(checkJointPositionFormat(pci->kin->getJointNames(), plan_instruction->getWaypoint()));
+          bool toleranced = false;
+
           JointWaypoint cur_position;
           if (isJointWaypoint(plan_instruction->getWaypoint()))
+          {
+            toleranced = plan_instruction->getWaypoint().cast_const<JointWaypoint>()->isToleranced();
             cur_position = *plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+          }
           else if (isStateWaypoint(plan_instruction->getWaypoint()))
             cur_position = JointWaypoint(plan_instruction->getWaypoint().cast_const<StateWaypoint>()->joint_names, plan_instruction->getWaypoint().cast_const<StateWaypoint>()->position);
           else
@@ -294,7 +304,8 @@ DefaultTrajoptProblemGenerator(const std::string& name,
           cur_plan_profile->apply(*pci, cur_position, *plan_instruction, composite_mi, active_links, index);
 
           // Add to fixed indices
-          fixed_steps.push_back(index);
+          if (!toleranced)
+            fixed_steps.push_back(index);
 
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
@@ -326,9 +337,14 @@ DefaultTrajoptProblemGenerator(const std::string& name,
             ++index;
           }
 
+          bool toleranced = false;
+
           // Add final point with waypoint costs and contraints
           if (isJointWaypoint(plan_instruction->getWaypoint()))
+          {
+            toleranced = plan_instruction->getWaypoint().cast_const<JointWaypoint>()->isToleranced();
             cur_plan_profile->apply(*pci, *plan_instruction->getWaypoint().cast_const<JointWaypoint>(), *start_instruction, composite_mi, active_links, index);
+          }
           else if (isStateWaypoint(plan_instruction->getWaypoint()))
           {
             JointWaypoint jwp(plan_instruction->getWaypoint().cast_const<StateWaypoint>()->joint_names, plan_instruction->getWaypoint().cast_const<StateWaypoint>()->position);
@@ -338,7 +354,8 @@ DefaultTrajoptProblemGenerator(const std::string& name,
             throw std::runtime_error("Unsupported start_waypoint type.");
 
           // Add to fixed indices
-          fixed_steps.push_back(index);
+          if (!toleranced)
+            fixed_steps.push_back(index);
 
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
