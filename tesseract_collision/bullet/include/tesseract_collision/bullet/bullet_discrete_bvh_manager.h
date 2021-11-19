@@ -123,6 +123,10 @@ public:
 
   void contactTest(ContactResultMap& collisions, const ContactRequest& request) override final;
 
+  void setGlobalOctree(std::shared_ptr<octomap::OcTree> octree) override final;
+
+  void applyGlobalOctreeDiff(pcl::PointCloud<pcl::PointXYZI> cells) override final;
+
 #ifndef SWIG
   /**
    * @brief A a bullet collision object to the manager

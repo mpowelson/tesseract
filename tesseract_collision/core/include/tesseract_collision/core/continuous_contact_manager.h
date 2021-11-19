@@ -39,6 +39,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_collision::ContinuousContactManager)
 #endif  // SWIG
 
+namespace pcl
+{
+  class PointXYZI;
+  template<class pointT> class PointCloud;
+}
+namespace octomap
+{
+class Octree;
+}
+
+
 namespace tesseract_collision
 {
 class ContinuousContactManager
@@ -262,6 +273,10 @@ public:
    * @param type The type of contact test
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactRequest& request) = 0;
+
+  virtual void setGlobalOctree(std::shared_ptr<octomap::OcTree> octree) = 0;
+
+  virtual void applyGlobalOctreeDiff(pcl::PointCloud<pcl::PointXYZI> cells) = 0;
 };
 
 }  // namespace tesseract_collision
