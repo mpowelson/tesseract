@@ -31,6 +31,8 @@
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <queue>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -927,6 +929,34 @@ bool Environment::removeLinkHelper(const std::string& name)
   }
 
   return true;
+}
+
+void Environment::setGlobalOctree(std::shared_ptr<octomap::OcTree> octree)
+{
+  // Set in contact managers
+
+
+  // Update environment copy
+  global_octree_ = octree;
+}
+
+
+void Environment::applyGlobalOctreeDiff(pcl::PointCloud<pcl::PointXYZI> cells)
+{
+  if (!global_octree_)
+  {
+    CONSOLE_BRIDGE_logWarn("Attempting to apply octree diff before octree has been initialized");
+    return;
+  }
+  // update in contact managers
+
+  // update environment copy
+  for (size_t i = 0; i < cells.points.size(); i++) {
+    pcl::PointXYZI& pnt = cells.points[i];
+    global_octree_->updateNode(global_octree_->coordToKey(pnt.x, pnt.y, pnt.z), pnt.intensity, false);
+  }
+  global_octree_->updateInnerOccupancy();
+
 }
 
 Environment::UPtr Environment::clone() const

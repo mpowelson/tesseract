@@ -56,6 +56,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_environment::Environment)
 #endif  // SWIG
 
+namespace pcl
+{
+  class PointXYZI;
+  template<class pointT> class PointCloud;
+}
+
 namespace tesseract_environment
 {
 /**
@@ -460,6 +466,10 @@ public:
   /** @brief Get the environment collision margin data */
   tesseract_common::CollisionMarginData getCollisionMarginData() const;
 
+  void setGlobalOctree(std::shared_ptr<octomap::OcTree> octree);
+
+  void applyGlobalOctreeDiff(pcl::PointCloud<pcl::PointXYZI> cells);
+
 protected:
   /** @brief Identifies if the object has been initialized */
   bool initialized_{ false };
@@ -478,6 +488,9 @@ protected:
 
   /** @brief Tesseract Scene Graph Const */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_;
+
+  /** @brief Octree attached to root link that is untracked by the command history */
+  std::shared_ptr<octomap::OcTree> global_octree_;
 
   /** @brief The kinematics information */
   tesseract_srdf::KinematicsInformation kinematics_information_;
