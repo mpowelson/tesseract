@@ -5,7 +5,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment.h>
-#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -55,12 +54,12 @@ static void BM_ENVIRONMENT_CLONE(benchmark::State& state, Environment::Ptr env)
   {
     benchmark::DoNotOptimize(clone = env->clone());
   }
-};
+}
 
 int main(int argc, char** argv)
 {
   Environment::Ptr env = std::make_shared<Environment>();
-  env->init<OFKTStateSolver>(*getSceneGraph());
+  env->init(*getSceneGraph());
 
   //////////////////////////////////////
   // Clone
