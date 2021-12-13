@@ -1,0 +1,36 @@
+
+\begin{DoxyRefList}
+\item[Member \mbox{\hyperlink{tesseract__ignition__visualization_8cpp_a010c518967207c53ba30ab4b7cdd26fa}{add\+Cylinder}} (Entity\+Manager \&entity\+\_\+manager, ignition\+::msgs\+::\+Link \&link, long \&sub\+\_\+index, const Eigen\+::\+Ref$<$ const Eigen\+::\+Vector3d $>$ \&pt1, const Eigen\+::\+Ref$<$ const Eigen\+::\+Vector3d $>$ \&pt2, const \mbox{\hyperlink{classtesseract__scene__graph_1_1Material}{tesseract\+\_\+scene\+\_\+graph\+::\+Material}} \&material, const Eigen\+::\+Vector3d \&)]\label{todo__todo000011}%
+\Hypertarget{todo__todo000011}%
+LEVI fix  
+\item[Member \mbox{\hyperlink{namespacetesseract__collision_ac37834bbb711cf5148c4b3a00faf6162}{tesseract\+\_\+collision\+::get\+Collision\+Object\+Pairs}} (const std\+::vector$<$ std\+::string $>$ \&active\+\_\+links, const std\+::vector$<$ std\+::string $>$ \&static\+\_\+links, const Is\+Contact\+Allowed\+Fn \&acm=nullptr)]\label{todo__todo000001}%
+\Hypertarget{todo__todo000001}%
+Should this also filter out links without geometry?  
+\item[Member \mbox{\hyperlink{structtesseract__common_1_1ClassLoader_af2749622fe3be804a464ce5d5ea62ca9}{tesseract\+\_\+common\+::Class\+Loader\+::decorate}} (const std\+::string \&library\+\_\+name, const std\+::string \&library\+\_\+directory=\char`\"{}\char`\"{})]\label{todo__todo000002}%
+\Hypertarget{todo__todo000002}%
+When support is dropped for 18.\+04 switch to using boost\+::dll\+::shared\+\_\+library\+::decorate  
+\item[Member \mbox{\hyperlink{classtesseract__environment_1_1AddLinkCommand_a68054aa6870a1600fa5d1ff56b94a9e4}{tesseract\+\_\+environment\+::Add\+Link\+Command\+::Add\+Link\+Command}} (const \mbox{\hyperlink{classtesseract__scene__graph_1_1Link}{tesseract\+\_\+scene\+\_\+graph\+::\+Link}} \&link, const \mbox{\hyperlink{classtesseract__scene__graph_1_1Joint}{tesseract\+\_\+scene\+\_\+graph\+::\+Joint}} \&joint, bool replace\+\_\+allowed=false)]\label{todo__todo000003}%
+\Hypertarget{todo__todo000003}%
+if joint is not fixed we should verify that limits are provided  
+\item[Member \mbox{\hyperlink{classtesseract__environment_1_1ReplaceJointCommand_a9fdde52130fe2aa8cfeb09138b1ebac6}{tesseract\+\_\+environment\+::Replace\+Joint\+Command\+::Replace\+Joint\+Command}} (const \mbox{\hyperlink{classtesseract__scene__graph_1_1Joint}{tesseract\+\_\+scene\+\_\+graph\+::\+Joint}} \&joint)]\label{todo__todo000004}%
+\Hypertarget{todo__todo000004}%
+check limits  
+\item[Member \mbox{\hyperlink{classtesseract__scene__graph_1_1SceneGraph_a3d78ee8fc4abe4542a4d4f5195a972c5}{tesseract\+\_\+scene\+\_\+graph\+::Scene\+Graph\+::get\+Joint\+Children\+Names}} (const std\+::vector$<$ std\+::string $>$ \&names) const]\label{todo__todo000009}%
+\Hypertarget{todo__todo000009}%
+Need to create custom visitor so already process joint\+\_\+names do not get processed again.  
+\item[Member \mbox{\hyperlink{tesseract__environment__unit_8cpp_a0885de2a8da955b4bb9b9be73de49350}{TEST}} (Tesseract\+Environment\+Unit, Env\+Change\+Link\+Collision\+Enabled\+Command\+Unit)]\label{todo__todo000005}%
+\Hypertarget{todo__todo000005}%
+update contact manager to have function to check collision object enabled state  
+\item[Member \mbox{\hyperlink{tesseract__environment__unit_8cpp_aa8be7c5729a18846a93f15be668f8d93}{TEST}} (Tesseract\+Environment\+Unit, Env\+Change\+Link\+Visibility\+Command\+Unit)]\label{todo__todo000006}%
+\Hypertarget{todo__todo000006}%
+update contact manager to have function to check collision object enabled state  
+\item[Member \mbox{\hyperlink{tesseract__environment__unit_8cpp_a48e8ba4aff90b6492e3905dc3d9a2686}{TEST}} (Tesseract\+Environment\+Unit, Env\+Set\+Active\+Continuous\+Contact\+Manager\+Command\+Unit)]\label{todo__todo000007}%
+\Hypertarget{todo__todo000007}%
+update contact manager to have function to check collision object enabled state  
+\item[Member \mbox{\hyperlink{tesseract__environment__unit_8cpp_ac000b39be53683eced961b8e905d5050}{TEST}} (Tesseract\+Environment\+Unit, Env\+Set\+Active\+Discrete\+Contact\+Manager\+Command\+Unit)]\label{todo__todo000008}%
+\Hypertarget{todo__todo000008}%
+update contact manager to have function to check collision object enabled state  
+\item[Member \mbox{\hyperlink{tesseract__scene__graph__unit_8cpp_a07e5d7fb0413d0780df4b637bcd35845}{TEST}} (Tesseract\+Scene\+Graph\+Unit, Tesseract\+Scene\+Graph\+Remove\+Link\+Unit)]\label{todo__todo000010}%
+\Hypertarget{todo__todo000010}%
+Doing this causes the test to fail but assign to new object works. Need to look into why 
+\end{DoxyRefList}
