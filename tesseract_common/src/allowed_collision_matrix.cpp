@@ -49,7 +49,6 @@ bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollision
     // Check if the key exists
     auto cp = entries_2.find(entry.first);
     if (cp == entries_2.end())
-      return false;
     // Check if the value is the same
     if (cp->second != entry.second)
       return false;
