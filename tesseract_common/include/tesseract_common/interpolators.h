@@ -64,8 +64,8 @@ public:
     ,
     // Scale x values to [0:1] and curve fit with a 3rd order B-Spline.
     spline_(Eigen::SplineFitting<Eigen::Spline<double, 1>>::InterpolateWithDerivatives(
-        y_vec.transpose(),
-        derivatives.transpose(),
+        Eigen::RowVectorXd(y_vec.transpose()),
+        Eigen::RowVectorXd(derivatives.transpose() * (x_max_ - x_min_)),
         indices,
         std::min<unsigned>(static_cast<unsigned>(x_vec.rows()) - 1, 3),
         scaledValues(x_vec)))
